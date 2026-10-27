@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Ibrohim Sirojiddinov — Node.js Backend Developer</title>
+  <meta name="description" content="Ibrohim Sirojiddinov — Backend Software Engineer (Node.js) in Tashkent, Uzbekistan. RESTful APIs and database-driven systems with Express.js, Fastify, PostgreSQL and Redis.">
+  <meta name="author" content="Ibrohim Sirojiddinov">
+  <meta name="color-scheme" content="dark light">
+  <meta name="theme-color" content="#070b12">
+
+  <meta property="og:type" content="profile">
+  <meta property="og:site_name" content="Ibrohim Sirojiddinov">
+  <meta property="og:title" content="Ibrohim Sirojiddinov — Node.js Backend Developer">
+  <meta property="og:description" content="Backend Software Engineer from Tashkent building RESTful APIs and database-driven systems with Node.js, Express.js, Fastify, PostgreSQL and Redis.">
+  <meta property="og:url" content="https://muza005.github.io/CV-Ibrohim/">
+  <meta property="og:image" content="https://muza005.github.io/CV-Ibrohim/assets/img/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Ibrohim Sirojiddinov — Backend Software Engineer (Node.js), Tashkent, Uzbekistan">
+  <meta property="profile:first_name" content="Ibrohim">
+  <meta property="profile:last_name" content="Sirojiddinov">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+
+  <script>
+    // Apply the saved (or system) theme before the first paint to avoid a flash.
+    (function () {
+      var root = document.documentElement;
+      var theme = null;
+      root.classList.add('js');
+      try { theme = localStorage.getItem('theme'); } catch (e) {}
+      if (theme !== 'light' && theme !== 'dark') {
+        theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+      }
+      root.setAttribute('data-theme', theme);
+    })();
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script src="assets/js/main.js" defer></script>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": "Ibrohim Sirojiddinov",
+    "jobTitle": "Backend Software Engineer (Node.js)",
+    "email": "mailto:sironiddinooov@gmail.com",
+    "telephone": "+998999206525",
+    "address": { "@type": "PostalAddress", "addressLocality": "Tashkent", "addressCountry": "UZ" },
+    "worksFor": { "@type": "Organization", "name": "Telecom Soft" },
+    "alumniOf": { "@type": "CollegeOrUniversity", "name": "INHA University in Tashkent" },
+    "knowsAbout": ["Node.js", "Express.js", "Fastify", "JavaScript", "REST APIs", "PostgreSQL", "Sequelize ORM", "Redis", "System Design", "Database Modeling", "SQL", "Nginx", "Linux"],
+    "knowsLanguage": ["uz", "en", "ru"],
+    "sameAs": ["https://www.linkedin.com/in/ibkm-dev", "https://t.me/bkm100"]
+  }
+  </script>
+</head>
+<body>
+  <svg class="sprite" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></symbol>
+    <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></symbol>
+    <symbol id="i-telegram" viewBox="0 0 24 24"><path d="m15 10-4 4 6 6 4-16-18 7 4 2 2 6 3-4"/></symbol>
+    <symbol id="i-linkedin" viewBox="0 0 24 24"><path d="M8 11v5"/><path d="M8 8v.01"/><path d="M12 16v-5"/><path d="M16 16v-3a2 2 0 1 0-4 0"/><path d="M3 7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4z"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v11"/><path d="m7 10 5 5 5-5"/><path d="M5 20h14"/></symbol>
+    <symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></symbol>
+    <symbol id="i-arrow-up-right" viewBox="0 0 24 24"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></symbol>
+    <symbol id="i-arrow-up" viewBox="0 0 24 24"><path d="M12 19V5"/><path d="m6 11 6-6 6 6"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 5 5L20 7"/></symbol>
+    <symbol id="i-check-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></symbol>
+    <symbol id="i-code" viewBox="0 0 24 24"><path d="m8 8-4 4 4 4"/><path d="m16 8 4 4-4 4"/><path d="m14 4-4 16"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6l-8-3z"/><path d="m9 12 2 2 4-4"/></symbol>
+    <symbol id="i-database" viewBox="0 0 24 24"><ellipse cx="12" cy="5.5" rx="8" ry="3"/><path d="M4 5.5v6.5c0 1.7 3.6 3 8 3s8-1.3 8-3V5.5"/><path d="M4 12v6.5c0 1.7 3.6 3 8 3s8-1.3 8-3V12"/></symbol>
+    <symbol id="i-network" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="5" rx="1"/><rect x="3" y="16" width="6" height="5" rx="1"/><rect x="15" y="16" width="6" height="5" rx="1"/><path d="M12 8v4M6 16v-2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2"/></symbol>
+    <symbol id="i-layers" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5 9-5z"/><path d="m3 13 9 5 9-5"/></symbol>
+    <symbol id="i-server" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="7" rx="2"/><rect x="3" y="13" width="18" height="7" rx="2"/><path d="M7 7.5h.01M7 16.5h.01"/></symbol>
+    <symbol id="i-sparkles" viewBox="0 0 24 24"><path d="M11 3l1.8 4.7L17.5 9.5l-4.7 1.8L11 16l-1.8-4.7L4.5 9.5l4.7-1.8z"/><path d="M18.5 14l.9 2.1 2.1.9-2.1.9-.9 2.1-.9-2.1-2.1-.9 2.1-.9z"/></symbol>
+    <symbol id="i-terminal" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="m7 9 3 3-3 3"/><path d="M12 15h5"/></symbol>
+    <symbol id="i-briefcase" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M3 13h18"/></symbol>
+    <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+    <symbol id="i-cap" viewBox="0 0 24 24"><path d="M22 9 12 4 2 9l10 5 10-5z"/><path d="M6 11v5c0 1.7 2.7 3 6 3s6-1.3 6-3v-5"/><path d="M22 9v6"/></symbol>
+    <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18 14 14 0 0 1 0-18"/></symbol>
+    <symbol id="i-car" viewBox="0 0 24 24"><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 17H3v-6l2-5h9l4 5h1a2 2 0 0 1 2 2v4h-2M15 17H9M3 11h15M12 11V6"/></symbol>
+    <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></symbol>
+    <symbol id="i-zap" viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8z"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/><path d="M12 15v2"/></symbol>
+    <symbol id="i-ticket" viewBox="0 0 24 24"><path d="M4 5h16a1 1 0 0 1 1 1v3a3 3 0 0 0 0 6v3a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-3a3 3 0 0 0 0-6V6a1 1 0 0 1 1-1z"/><path d="M14 5v2M14 11v2M14 17v2"/></symbol>
+    <symbol id="i-list-check" viewBox="0 0 24 24"><path d="M11 6h9M11 12h9M11 18h9"/><path d="m3 6 1.5 1.5L7 5M3 12l1.5 1.5L7 11M3 18l1.5 1.5L7 17"/></symbol>
+    <symbol id="i-kanban" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 7v7M12 7v3M16 7v9"/></symbol>
+  </svg>
+
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div class="progress" aria-hidden="true"><span class="progress-bar"></span></div>
+  <div class="bg-noise" aria-hidden="true"></div>
+
+  <header class="site-header" data-header>
+    <div class="container header-inner">
+      <a class="brand" href="#top" aria-label="Ibrohim Sirojiddinov — back to top">
+        <span class="brand-mark" aria-hidden="true">IS</span>
+        <span class="brand-name" aria-hidden="true">Ibrohim<span class="brand-dot">.</span></span>
+      </a>
+
+      <nav class="nav" aria-label="Main">
+        <ul class="nav-list">
+          <li><a class="nav-link" href="#about">About</a></li>
+          <li><a class="nav-link" href="#skills">Skills</a></li>
+          <li><a class="nav-link" href="#experience">Experience</a></li>
+          <li><a class="nav-link" href="#projects">Projects</a></li>
+          <li><a class="nav-link" href="#education">Education</a></li>
+          <li><a class="nav-link" href="#contact">Contact</a></li>
+        </ul>
+        <span class="nav-indicator" aria-hidden="true"></span>
+      </nav>
+
+      <div class="header-actions">
+        <button class="icon-btn theme-toggle" type="button" data-theme-toggle aria-label="Switch color theme">
+          <svg class="icon icon-sun" aria-hidden="true"><use href="#i-sun"/></svg>
+          <svg class="icon icon-moon" aria-hidden="true"><use href="#i-moon"/></svg>
+        </button>
+        <a class="btn btn-primary btn-sm" href="assets/Ibrohim-Sirojiddinov-CV.pdf" download>
+          <svg class="icon" aria-hidden="true"><use href="#i-download"/></svg>
+          <span>CV</span>
+        </a>
+        <button class="icon-btn menu-toggle" type="button" data-menu-toggle aria-expanded="false" aria-controls="mobile-menu" aria-label="Open menu">
+          <span class="burger" aria-hidden="true"><span></span><span></span><span></span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="mobile-menu" id="mobile-menu" data-menu inert>
+    <nav aria-label="Mobile">
+      <ul class="mobile-list">
+        <li style="--i:0"><a href="#about"><span class="mono">01</span>About</a></li>
+        <li style="--i:1"><a href="#skills"><span class="mono">02</span>Skills</a></li>
+        <li style="--i:2"><a href="#experience"><span class="mono">03</span>Experience</a></li>
+        <li style="--i:3"><a href="#projects"><span class="mono">04</span>Projects</a></li>
+        <li style="--i:4"><a href="#education"><span class="mono">05</span>Education</a></li>
+        <li style="--i:5"><a href="#contact"><span class="mono">06</span>Contact</a></li>
+      </ul>
+    </nav>
+    <div class="mobile-foot">
+      <a class="btn btn-primary" href="assets/Ibrohim-Sirojiddinov-CV.pdf" download>
+        <svg class="icon" aria-hidden="true"><use href="#i-download"/></svg>
+        Download CV
+      </a>
+      <div class="social-row">
+        <a class="icon-btn" href="https://t.me/bkm100" target="_blank" rel="noopener" aria-label="Telegram"><svg class="icon" aria-hidden="true"><use href="#i-telegram"/></svg></a>
+        <a class="icon-btn" href="https://www.linkedin.com/in/ibkm-dev" target="_blank" rel="noopener" aria-label="LinkedIn"><svg class="icon" aria-hidden="true"><use href="#i-linkedin"/></svg></a>
+        <a class="icon-btn" href="mailto:sironiddinooov@gmail.com" aria-label="Email"><svg class="icon" aria-hidden="true"><use href="#i-mail"/></svg></a>
+      </div>
+    </div>
+  </div>
+
+  <main id="main">
+    <!-- Hero -->
+    <section class="hero" id="top" aria-labelledby="hero-title">
+      <div class="hero-bg" aria-hidden="true">
+        <canvas class="hero-canvas" data-network></canvas>
+        <div class="hero-grid"></div>
+        <div class="hero-orb hero-orb-1"></div>
+        <div class="hero-orb hero-orb-2"></div>
+      </div>
+
+      <div class="container hero-inner">
+        <div class="hero-copy">
+          <p class="status-pill intro" style="--i:0">
+            <span class="pulse-dot" aria-hidden="true"></span>
+            Open to Node.js backend roles
+          </p>
+
+          <h1 class="hero-title" id="hero-title">
+            <span class="line-mask"><span class="line" style="--l:0">Ibrohim</span></span>
+            <span class="line-mask"><span class="line gradient-text" style="--l:1">Sirojiddinov</span></span>
+          </h1>
+
+          <p class="hero-role intro" style="--i:2">
+            Backend Software Engineer
+            <span class="hero-role-tag"><svg class="icon" aria-hidden="true"><use href="#i-terminal"/></svg>Node.js</span>
+          </p>
+
+          <p class="hero-typed intro" style="--i:3">
+            <span class="visually-hidden">I build RESTful APIs, database-driven systems, secure authentication flows and maintainable backend architectures.</span>
+            <span aria-hidden="true">I build <span class="typed" data-typed='["RESTful APIs","database-driven systems","secure auth flows","RBAC &amp; access control","maintainable backends"]'>RESTful APIs</span><span class="typed-caret"></span></span>
+          </p>
+
+          <p class="hero-desc intro" style="--i:4">
+            Over a year of hands-on experience building and maintaining server-side applications with
+            Node.js, Express.js, Fastify, PostgreSQL and Redis — from API design and security to database modeling.
+          </p>
+
+          <div class="hero-cta intro" style="--i:5">
+            <a class="btn btn-primary btn-lg" href="#contact">
+              Get in touch
+              <svg class="icon icon-arrow" aria-hidden="true"><use href="#i-arrow-right"/></svg>
+            </a>
+            <a class="btn btn-ghost btn-lg" href="assets/Ibrohim-Sirojiddinov-CV.pdf" download>
+              <svg class="icon" aria-hidden="true"><use href="#i-download"/></svg>
+              Download CV
+            </a>
+          </div>
+
+          <ul class="hero-links intro" style="--i:6">
+            <li><svg class="icon" aria-hidden="true"><use href="#i-pin"/></svg>Tashkent, Uzbekistan</li>
+            <li><a href="https://t.me/bkm100" target="_blank" rel="noopener"><svg class="icon" aria-hidden="true"><use href="#i-telegram"/></svg>@bkm100</a></li>
+            <li><a href="https://www.linkedin.com/in/ibkm-dev" target="_blank" rel="noopener"><svg class="icon" aria-hidden="true"><use href="#i-linkedin"/></svg>in/ibkm-dev</a></li>
+            <li><a href="mailto:sironiddinooov@gmail.com"><svg class="icon" aria-hidden="true"><use href="#i-mail"/></svg>Email</a></li>
+          </ul>
+        </div>
+
+        <div class="hero-visual intro" style="--i:3" aria-hidden="true">
+          <div class="terminal-frame">
+            <div class="terminal" data-terminal>
+              <div class="terminal-bar">
+                <span class="tdot tdot-r"></span><span class="tdot tdot-y"></span><span class="tdot tdot-g"></span>
+                <span class="terminal-title">~/ibrohim — zsh</span>
+              </div>
+              <div class="terminal-body">
+                <div class="t-line"><span class="t-prompt">$</span> <span class="t-cmd">curl localhost:3000/api/engineer</span></div>
+                <div class="t-line"><span class="t-dim">HTTP/1.1</span> <span class="t-ok">200 OK</span></div>
+                <div class="t-line"><span class="t-dim">content-type: application/json</span></div>
+                <div class="t-line"> </div>
+                <div class="t-line"><span class="t-p">{</span></div>
+                <div class="t-line">  <span class="t-k">"name"</span><span class="t-p">:</span> <span class="t-s">"Ibrohim Sirojiddinov"</span><span class="t-p">,</span></div>
+                <div class="t-line">  <span class="t-k">"role"</span><span class="t-p">:</span> <span class="t-s">"Node.js Backend Developer"</span><span class="t-p">,</span></div>
+                <div class="t-line">  <span class="t-k">"experience"</span><span class="t-p">:</span> <span class="t-s">"1+ year"</span><span class="t-p">,</span></div>
+                <div class="t-line">  <span class="t-k">"stack"</span><span class="t-p">: [</span></div>
+                <div class="t-line">    <span class="t-s">"Express.js"</span><span class="t-p">,</span> <span class="t-s">"Fastify"</span><span class="t-p">,</span></div>
+                <div class="t-line">    <span class="t-s">"PostgreSQL"</span><span class="t-p">,</span> <span class="t-s">"Redis"</span></div>
+                <div class="t-line">  <span class="t-p">],</span></div>
+                <div class="t-line">  <span class="t-k">"focus"</span><span class="t-p">: [</span><span class="t-s">"REST APIs"</span><span class="t-p">,</span> <span class="t-s">"RBAC"</span><span class="t-p">],</span></div>
+                <div class="t-line">  <span class="t-k">"location"</span><span class="t-p">:</span> <span class="t-s">"Tashkent, UZ"</span><span class="t-p">,</span></div>
+                <div class="t-line">  <span class="t-k">"openTo"</span><span class="t-p">:</span> <span class="t-s">"On-site | Hybrid | Remote"</span></div>
+                <div class="t-line"><span class="t-p">}</span></div>
+                <div class="t-line"><span class="t-prompt">$</span> <span class="t-caret"></span></div>
+              </div>
+            </div>
+          </div>
+          <span class="float-badge fb-1"><svg class="icon"><use href="#i-database"/></svg>PostgreSQL</span>
+          <span class="float-badge fb-2"><svg class="icon"><use href="#i-zap"/></svg>Fastify</span>
+          <span class="float-badge fb-3"><svg class="icon"><use href="#i-layers"/></svg>Redis</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Highlights -->
+    <section class="stats" aria-label="Highlights">
+      <div class="container">
+        <ul class="stats-grid">
+          <li class="card stat" data-spotlight>
+            <span class="stat-value gradient-text" aria-hidden="true" data-count="1" data-suffix="+">1+</span>
+            <span class="visually-hidden">More than 1</span>
+            <span class="stat-label">year of hands-on backend experience</span>
+          </li>
+          <li class="card stat" data-spotlight>
+            <span class="stat-value gradient-text" aria-hidden="true" data-count="15" data-prefix="~" data-suffix="%">~15%</span>
+            <span class="visually-hidden">About 15%</span>
+            <span class="stat-label">efficiency gains from improved backend workflows</span>
+          </li>
+          <li class="card stat" data-spotlight>
+            <span class="stat-value gradient-text" aria-hidden="true" data-count="20" data-prefix="~" data-suffix="%">~20%</span>
+            <span class="visually-hidden">About 20%</span>
+            <span class="stat-label">estimated team workflow boost with M-System</span>
+          </li>
+          <li class="card stat" data-spotlight>
+            <span class="stat-value gradient-text" aria-hidden="true" data-count="4">4</span>
+            <span class="visually-hidden">4</span>
+            <span class="stat-label">selected backend projects, one in production</span>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- About -->
+    <section class="section" id="about" aria-labelledby="about-title">
+      <div class="container">
+        <header class="section-head reveal">
+          <p class="eyebrow"><span>01</span>About</p>
+          <h2 class="section-title" id="about-title">Backend-focused engineer who turns requirements into <span class="gradient-text">reliable APIs</span>.</h2>
+        </header>
+
+        <div class="about-grid">
+          <div class="about-text reveal">
+            <p class="lead">I'm a Node.js developer with over a year of hands-on experience building and maintaining server-side applications, <strong>RESTful APIs</strong> and <strong>database-driven systems</strong>.</p>
+            <p>I can work independently, research solutions and deliver assigned backend tasks using <strong>Node.js, Express.js, PostgreSQL and Redis</strong>. Improving existing backend workflows and application performance has contributed to efficiency gains of approximately <strong>15%</strong>.</p>
+            <p>I'm familiar with designing scalable, maintainable backend architectures — API security, authentication, database modeling and structured application layers. I document APIs with <strong>Swagger/OpenAPI</strong> and apply spec-driven design to capture system requirements and development workflows.</p>
+            <p>I keep expanding my practical knowledge of <strong>AI agents and agentic AI</strong> — and how they apply to software development, automation, documentation and modern engineering workflows.</p>
+          </div>
+
+          <aside class="card position-card reveal" data-spotlight aria-labelledby="position-title">
+            <p class="pc-eyebrow"><svg class="icon" aria-hidden="true"><use href="#i-target"/></svg>Desired position</p>
+            <p class="pc-title" id="position-title">Node.js Backend Developer</p>
+            <dl class="pc-list">
+              <div class="pc-row">
+                <dt>Work format</dt>
+                <dd>
+                  <ul class="format-chips">
+                    <li>On-site</li>
+                    <li>Hybrid</li>
+                    <li>Remote</li>
+                  </ul>
+                </dd>
+              </div>
+              <div class="pc-row">
+                <dt>Based in</dt>
+                <dd>Tashkent, Uzbekistan</dd>
+              </div>
+              <div class="pc-row">
+                <dt>Local time</dt>
+                <dd><span data-local-time>—</span> <span class="pc-muted">UTC+5</span></dd>
+              </div>
+              <div class="pc-row">
+                <dt>Exploring</dt>
+                <dd>AI agents &amp; agentic AI</dd>
+              </div>
+            </dl>
+            <a class="btn btn-ghost btn-block" href="assets/Ibrohim-Sirojiddinov-CV.pdf" download>
+              <svg class="icon" aria-hidden="true"><use href="#i-download"/></svg>
+              Download CV (PDF)
+            </a>
+          </aside>
+        </div>
+
+        <ul class="focus-grid" data-stagger>
+          <li class="card focus-card reveal" data-spotlight>
+            <span class="icon-tile" aria-hidden="true"><svg class="icon"><use href="#i-code"/></svg></span>
+            <h3>API development</h3>
+            <p>RESTful APIs with Node.js, Express.js and Fastify — validated, secured and documented with Swagger/OpenAPI.</p>
+          </li>
+          <li class="card focus-card reveal" data-spotlight>
+            <span class="icon-tile" aria-hidden="true"><svg class="icon"><use href="#i-shield"/></svg></span>
+            <h3>Security &amp; access</h3>
+            <p>RBAC, JWT, OTP-based two-factor authentication, rate limiting and request validation to protect data and access.</p>
+          </li>
+          <li class="card focus-card reveal" data-spotlight>
+            <span class="icon-tile" aria-hidden="true"><svg class="icon"><use href="#i-database"/></svg></span>
+            <h3>Data modeling</h3>
+            <p>Relational schemas and relationships in PostgreSQL with Sequelize ORM, plus Redis for fast, short-lived state.</p>
+          </li>
+          <li class="card focus-card reveal" data-spotlight>
+            <span class="icon-tile" aria-hidden="true"><svg class="icon"><use href="#i-network"/></svg></span>
+            <h3>Architecture</h3>
+            <p>Monolithic and microservice systems built from independently structured modules, services and clear application layers.</p>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Skills -->
+    <section class="section section-alt" id="skills" aria-labelledby="skills-title">
+      <div class="container">
+        <header class="section-head reveal">
+          <p class="eyebrow"><span>02</span>Skills</p>
+          <h2 class="section-title" id="skills-title">A focused toolbox for building <span class="gradient-text">solid backends</span>.</h2>
+          <p class="section-lead">The core stack I work with, plus the tools I've used across projects.</p>
+        </header>
+      </div>
+
+      <div class="marquee-group reveal" aria-hidden="true">
+        <div class="marquee" data-marquee>
+          <div class="marquee-track">
+            <span class="marquee-item">Node.js</span>
+            <span class="marquee-item">Express.js</span>
+            <span class="marquee-item">Fastify</span>
+            <span class="marquee-item">JavaScript ES6+</span>
+            <span class="marquee-item">REST APIs</span>
+            <span class="marquee-item">PostgreSQL</span>
+            <span class="marquee-item">Sequelize ORM</span>
+            <span class="marquee-item">Redis</span>
+            <span class="marquee-item">SQL</span>
+          </div>
+        </div>
+        <div class="marquee marquee-reverse" data-marquee>
+          <div class="marquee-track">
+            <span class="marquee-item">System Design</span>
+            <span class="marquee-item">Database Modeling</span>
+            <span class="marquee-item">Nginx</span>
+            <span class="marquee-item">Linux</span>
+            <span class="marquee-item">Swagger / OpenAPI</span>
+            <span class="marquee-item">JWT</span>
+            <span class="marquee-item">RBAC</span>
+            <span class="marquee-item">Microservices</span>
+            <span class="marquee-item">AI agents</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="container">
+        <ul class="skills-grid" data-stagger>
+          <li class="card skill-card reveal" data-spotlight>
+            <div class="skill-head">
+              <span class="icon-tile" aria-hidden="true"><svg class="icon"><use href="#i-terminal"/></svg></span>
+              <div><h3>Core</h3><p class="skill-sub">Runtime &amp; frameworks</p></div>
+            </div>
+            <ul class="chips">
+              <li class="chip">Node.js</li>
+              <li class="chip">JavaScript (ES6+)</li>
+              <li class="chip">Express.js</li>
+              <li class="chip">Fastify</li>
+            </ul>
+          </li>
+          <li class="card skill-card reveal" data-spotlight>
+            <div class="skill-head">
+              <span class="icon-tile" aria-hidden="true"><svg class="icon"><use href="#i-database"/></svg></span>
+              <div><h3>Databases</h3><p class="skill-sub">Storage &amp; modeling</p></div>
+            </div>
+            <ul class="chips">
+              <li class="chip">PostgreSQL</li>
+              <li class="chip">SQL</li>
+              <li class="chip">Sequelize ORM</li>
+              <li class="chip">Redis</li>
+              <li class="chip">Database Modeling</li>
+            </ul>
+          </li>
+          <li class="card skill-card reveal" data-spotlight>
+            <div class="skill-head">
+              <span class="icon-tile" aria-hidden="true"><svg class="icon"><use href="#i-shield"/></svg></span>
+              <div><h3>APIs &amp; security</h3><p class="skill-sub">Design, auth, docs</p></div>
+            </div>
+            <ul class="chips">
+              <li class="chip">REST APIs</li>
+              <li class="chip">Swagger / OpenAPI</li>
+              <li class="chip">JWT</li>
+              <li class="chip">RBAC</li>
+              <li class="chip">OTP / 2FA</li>
+            </ul>
+          </li>
+          <li class="card skill-card reveal" data-spotlight>
+            <div class="skill-head">
+              <span class="icon-tile" aria-hidden="true"><svg class="icon"><use href="#i-layers"/></svg></span>
+              <div><h3>Architecture</h3><p class="skill-sub">Structure &amp; scale</p></div>
+            </div>
+            <ul class="chips">
+              <li class="chip">System Design</li>
+              <li class="chip">Microservices</li>
+              <li class="chip">Monoliths</li>
+              <li class="chip">Spec-driven design</li>
+            </ul>
+          </li>
+          <li class="card skill-card reveal" data-spotlight>
+            <div class="skill-head">
+              <span class="icon-tile" aria-hidden="true"><svg class="icon"><use href="#i-server"/></svg></span>
+              <div><h3>Infrastructure</h3><p class="skill-sub">Servers &amp; tooling</p></div>
+            </div>
+            <ul class="chips">
+              <li class="chip">Nginx</li>
+              <li class="chip">Linux</li>
+              <li class="chip">Pino</li>
+            </ul>
+          </li>
+          <li class="card skill-card reveal" data-spotlight>
+            <div class="skill-head">
+              <span class="icon-tile" aria-hidden="true"><svg class="icon"><use href="#i-sparkles"/></svg></span>
+              <div><h3>Beyond the backend</h3><p class="skill-sub">Frontend &amp; AI</p></div>
+            </div>
+            <ul class="chips">
+              <li class="chip">React.js</li>
+              <li class="chip">Vanilla JS</li>
+              <li class="chip">HTML &amp; CSS</li>
+              <li class="chip">AI agents</li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Experience -->
+    <section class="section" id="experience" aria-labelledby="experience-title">
+      <div class="container">
+        <header class="section-head reveal">
+          <p class="eyebrow"><span>03</span>Experience</p>
+          <h2 class="section-title" id="experience-title">Building backend systems for <span class="gradient-text">real telecom business</span>.</h2>
+        </header>
+
+        <article class="card job reveal" data-spotlight aria-labelledby="job-title">
+          <div class="job-aside">
+            <span class="icon-tile icon-tile-lg" aria-hidden="true"><svg class="icon"><use href="#i-briefcase"/></svg></span>
+            <p class="job-company">TELECOM SOFT</p>
+            <h3 class="job-role" id="job-title">Backend Developer</h3>
+            <span class="badge"><span class="pulse-dot" aria-hidden="true"></span>Current role</span>
+            <ul class="job-meta">
+              <li><svg class="icon" aria-hidden="true"><use href="#i-calendar"/></svg><span><time datetime="2025-07">July 2025</time> — Present</span></li>
+              <li><svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg><span data-since="2025-07">1 yr 4 mos</span></li>
+              <li><svg class="icon" aria-hidden="true"><use href="#i-pin"/></svg><span>Tashkent, Uzbekistan</span></li>
+            </ul>
+          </div>
+
+          <div class="job-main">
+            <ul class="job-points">
+              <li><svg class="icon" aria-hidden="true"><use href="#i-check-circle"/></svg><span>Developed and maintained <strong>RESTful APIs</strong> with Node.js and Express.js, including relational database modeling and relationships for business-oriented backend systems.</span></li>
+              <li><svg class="icon" aria-hidden="true"><use href="#i-check-circle"/></svg><span>Implemented <strong>RBAC</strong> and related mechanisms to strengthen API security, access control, data protection and application reliability.</span></li>
+              <li><svg class="icon" aria-hidden="true"><use href="#i-check-circle"/></svg><span>Gained hands-on experience with <strong>monolithic and microservice architectures</strong>, focusing on developing and maintaining independently structured backend modules and services.</span></li>
+              <li><svg class="icon" aria-hidden="true"><use href="#i-check-circle"/></svg><span>Designed and built an <strong>internal project and task management web application</strong> for team collaboration — a lightweight alternative to platforms such as Notion.</span></li>
+              <li><svg class="icon" aria-hidden="true"><use href="#i-check-circle"/></svg><span>Worked with <strong>ISP-specific business and commercial processes</strong>, translating operational requirements into practical backend functionality and system workflows.</span></li>
+            </ul>
+            <ul class="chips job-chips">
+              <li class="chip">Node.js</li>
+              <li class="chip">Express.js</li>
+              <li class="chip">PostgreSQL</li>
+              <li class="chip">REST APIs</li>
+              <li class="chip">RBAC</li>
+              <li class="chip">Microservices</li>
+            </ul>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- Projects -->
+    <section class="section section-alt" id="projects" aria-labelledby="projects-title">
+      <div class="container">
+        <header class="section-head reveal">
+          <p class="eyebrow"><span>04</span>Projects</p>
+          <h2 class="section-title" id="projects-title">Selected work — from secure auth flows to a <span class="gradient-text">platform in production</span>.</h2>
+        </header>
+
+        <div class="projects-grid" data-stagger>
+          <article class="card project-card project-featured reveal" data-spotlight aria-labelledby="p-msystem">
+            <div class="project-body">
+              <div class="project-top">
+                <span class="icon-tile" aria-hidden="true"><svg class="icon"><use href="#i-kanban"/></svg></span>
+                <span class="badge"><span class="pulse-dot" aria-hidden="true"></span>In production</span>
+              </div>
+              <p class="project-kind">Internal platform</p>
+              <h3 class="project-title" id="p-msystem">M-System</h3>
+              <p class="project-subtitle">Project &amp; task management platform</p>
+              <p class="project-desc">Designed and developed an internal project, task and daily reporting platform for team collaboration, with RBAC-based access control and structured workflow management. Integrated AI-agentic capabilities and deployed it to production.</p>
+              <ul class="project-points">
+                <li>RBAC-based access control</li>
+                <li>Projects, tasks &amp; daily reports</li>
+                <li>Structured workflow management</li>
+                <li>AI-agentic capabilities</li>
+              </ul>
+              <div class="project-impact">
+                <strong class="gradient-text">~20%</strong>
+                <span>estimated improvement in team workflow efficiency</span>
+              </div>
+              <ul class="chips">
+                <li class="chip">Node.js</li>
+                <li class="chip">Express.js</li>
+                <li class="chip">PostgreSQL</li>
+                <li class="chip">Sequelize ORM</li>
+                <li class="chip">RBAC</li>
+                <li class="chip">Redis</li>
+                <li class="chip">React.js</li>
+                <li class="chip">Nginx</li>
+                <li class="chip">AI-Agentic</li>
+              </ul>
+            </div>
+
+            <figure class="arch-wrap" aria-hidden="true">
+              <figcaption class="arch-caption">stack at a glance</figcaption>
+              <svg class="arch" viewBox="0 0 440 340">
+                <g class="arch-edges">
+                  <path d="M170 58V98"/>
+                  <path d="M170 140v40"/>
+                  <path d="M255 210h63"/>
+                  <path d="M130 240c0 22-38 18-38 42"/>
+                  <path d="M210 240c0 22 35 18 35 42"/>
+                </g>
+                <g class="arch-flows">
+                  <path d="M170 58V98"/>
+                  <path d="M170 140v40"/>
+                  <path d="M255 210h63"/>
+                  <path d="M130 240c0 22-38 18-38 42"/>
+                  <path d="M210 240c0 22 35 18 35 42"/>
+                </g>
+                <g class="arch-node" transform="translate(95 14)"><rect width="150" height="44" rx="12"/><text x="75" y="22">React client</text></g>
+                <g class="arch-node" transform="translate(110 98)"><rect width="120" height="42" rx="12"/><text x="60" y="21">Nginx</text></g>
+                <g class="arch-node arch-core" transform="translate(85 180)"><rect width="170" height="60" rx="14"/><text x="85" y="23">Express API</text><text class="arch-sub" x="85" y="42">RBAC · Sequelize</text></g>
+                <g class="arch-node arch-ai" transform="translate(318 185)"><rect width="104" height="50" rx="12"/><text x="52" y="25">AI agent</text></g>
+                <g class="arch-node" transform="translate(24 282)"><rect width="136" height="44" rx="12"/><text x="68" y="22">PostgreSQL</text></g>
+                <g class="arch-node" transform="translate(190 282)"><rect width="110" height="44" rx="12"/><text x="55" y="22">Redis</text></g>
+              </svg>
+            </figure>
+          </article>
+
+          <article class="card project-card reveal" data-spotlight aria-labelledby="p-b2b">
+            <div class="project-top">
+              <span class="icon-tile" aria-hidden="true"><svg class="icon"><use href="#i-ticket"/></svg></span>
+              <span class="project-kind">Modular backend</span>
+            </div>
+            <h3 class="project-title" id="p-b2b">B2B Ticket &amp; Appeals Module</h3>
+            <p class="project-desc">A modular backend system for B2B complaints, appeals, support tickets and messaging workflows, with relational data models and secured, documented REST APIs.</p>
+            <ul class="project-points">
+              <li>Status history, attachments &amp; messaging</li>
+              <li>Organization-based authorization</li>
+              <li>Audit logging</li>
+              <li>JWT, RBAC &amp; request validation</li>
+            </ul>
+            <ul class="chips">
+              <li class="chip">Node.js</li>
+              <li class="chip">Fastify</li>
+              <li class="chip">JWT</li>
+              <li class="chip">RBAC</li>
+              <li class="chip">OpenAPI/Swagger</li>
+              <li class="chip">Pino</li>
+            </ul>
+          </article>
+
+          <article class="card project-card reveal" data-spotlight aria-labelledby="p-otp">
+            <div class="project-top">
+              <span class="icon-tile" aria-hidden="true"><svg class="icon"><use href="#i-lock"/></svg></span>
+              <span class="project-kind">Security</span>
+            </div>
+            <h3 class="project-title" id="p-otp">OTP-Based Two-Step Verification (2FA)</h3>
+            <p class="project-desc">A secure OTP-based two-factor authentication flow with Redis-backed temporary authentication states and controlled session creation after successful verification.</p>
+            <ul class="project-points">
+              <li>OTP expiration, retry &amp; resend limits</li>
+              <li>Rate limiting &amp; device validation</li>
+              <li>Redis-backed temporary auth states</li>
+              <li>External SMS provider integration</li>
+            </ul>
+            <ul class="chips">
+              <li class="chip">Node.js</li>
+              <li class="chip">Fastify</li>
+              <li class="chip">Redis</li>
+              <li class="chip">SMS provider</li>
+              <li class="chip">Authentication</li>
+            </ul>
+          </article>
+
+          <article class="card project-card reveal" data-spotlight aria-labelledby="p-tasks">
+            <div class="project-top">
+              <span class="icon-tile" aria-hidden="true"><svg class="icon"><use href="#i-list-check"/></svg></span>
+              <span class="project-kind">Full-stack app</span>
+            </div>
+            <h3 class="project-title" id="p-tasks">Task Management Application</h3>
+            <p class="project-desc">A full-stack task management application with user authentication and personal task CRUD operations — practical work in REST API development, relational modeling and frontend–backend integration.</p>
+            <ul class="project-points">
+              <li>User authentication</li>
+              <li>Personal task CRUD</li>
+              <li>Relational database modeling</li>
+              <li>Frontend–backend integration</li>
+            </ul>
+            <ul class="chips">
+              <li class="chip">Node.js</li>
+              <li class="chip">Express.js</li>
+              <li class="chip">PostgreSQL</li>
+              <li class="chip">Sequelize ORM</li>
+              <li class="chip">Vanilla JS</li>
+              <li class="chip">HTML</li>
+              <li class="chip">CSS</li>
+            </ul>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Education & languages -->
+    <section class="section" id="education" aria-labelledby="education-title">
+      <div class="container">
+        <header class="section-head reveal">
+          <p class="eyebrow"><span>05</span>Education</p>
+          <h2 class="section-title" id="education-title">Education, languages <span class="gradient-text">&amp; more</span>.</h2>
+        </header>
+
+        <div class="edu-grid" data-stagger>
+          <article class="card edu-card reveal" data-spotlight aria-labelledby="edu-school">
+            <div class="edu-top">
+              <span class="icon-tile icon-tile-lg" aria-hidden="true"><svg class="icon"><use href="#i-cap"/></svg></span>
+              <span class="badge badge-muted"><time datetime="2017">2017</time> — <time datetime="2021">2021</time></span>
+            </div>
+            <h3 class="edu-school" id="edu-school">INHA University in Tashkent</h3>
+            <p class="edu-degree">Bachelor's Degree</p>
+            <p class="edu-faculty">School of Computer and Information Engineering (SOCIE)</p>
+            <span class="edu-watermark" aria-hidden="true">SOCIE</span>
+          </article>
+
+          <div class="edu-side">
+            <article class="card lang-card reveal" data-spotlight aria-labelledby="lang-title">
+              <div class="lang-title-row">
+                <span class="icon-tile" aria-hidden="true"><svg class="icon"><use href="#i-globe"/></svg></span>
+                <h3 id="lang-title">Languages</h3>
+              </div>
+              <ul class="langs">
+                <li class="lang">
+                  <div class="lang-head"><span class="lang-name">Uzbek</span><span class="lang-level">Native</span></div>
+                  <div class="lang-bar" aria-hidden="true"><span class="on" style="--s:0"></span><span class="on" style="--s:1"></span><span class="on" style="--s:2"></span><span class="on" style="--s:3"></span><span class="on" style="--s:4"></span><span class="on" style="--s:5"></span></div>
+                </li>
+                <li class="lang">
+                  <div class="lang-head"><span class="lang-name">English</span><span class="lang-level">B2 · Upper-Intermediate</span></div>
+                  <div class="lang-bar" aria-hidden="true"><span class="on" style="--s:0"></span><span class="on" style="--s:1"></span><span class="on" style="--s:2"></span><span class="on" style="--s:3"></span><span></span><span></span></div>
+                </li>
+                <li class="lang">
+                  <div class="lang-head"><span class="lang-name">Russian</span><span class="lang-level">A2 · Elementary</span></div>
+                  <div class="lang-bar" aria-hidden="true"><span class="on" style="--s:0"></span><span class="on" style="--s:1"></span><span></span><span></span><span></span><span></span></div>
+                </li>
+              </ul>
+              <div class="lang-scale" aria-hidden="true"><span>A1</span><span>A2</span><span>B1</span><span>B2</span><span>C1</span><span>C2</span></div>
+            </article>
+
+            <article class="card extra-card reveal" data-spotlight aria-labelledby="extra-title">
+              <span class="icon-tile" aria-hidden="true"><svg class="icon"><use href="#i-car"/></svg></span>
+              <div>
+                <h3 id="extra-title">Driver's license</h3>
+                <p>Category B</p>
+              </div>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact -->
+    <section class="section contact" id="contact" aria-labelledby="contact-title">
+      <div class="container">
+        <div class="contact-panel reveal">
+          <div class="contact-intro">
+            <p class="eyebrow"><span>06</span>Contact</p>
+            <h2 class="contact-title" id="contact-title">Let's build something <span class="gradient-text">reliable</span> together.</h2>
+            <p class="contact-text">I'm open to Node.js Backend Developer roles — on-site, hybrid or remote. Have a role or a project in mind? Reach out through any of the channels here.</p>
+            <div class="contact-actions">
+              <a class="btn btn-primary btn-lg" href="mailto:sironiddinooov@gmail.com?subject=Node.js%20Backend%20Developer%20opportunity">
+                <svg class="icon" aria-hidden="true"><use href="#i-mail"/></svg>
+                Send an email
+              </a>
+              <a class="btn btn-ghost btn-lg" href="https://t.me/bkm100" target="_blank" rel="noopener">
+                <svg class="icon" aria-hidden="true"><use href="#i-telegram"/></svg>
+                Message on Telegram
+              </a>
+            </div>
+            <p class="contact-local">
+              <svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg>
+              <span>It's <strong data-local-time>—</strong> in Tashkent right now (UTC+5)</span>
+            </p>
+          </div>
+
+          <ul class="contact-list">
+            <li class="contact-item">
+              <span class="icon-tile" aria-hidden="true"><svg class="icon"><use href="#i-mail"/></svg></span>
+              <div class="contact-body">
+                <span class="contact-label">Email</span>
+                <a class="contact-value" href="mailto:sironiddinooov@gmail.com">sironiddinooov@gmail.com</a>
+              </div>
+              <button class="icon-btn copy-btn" type="button" data-copy="sironiddinooov@gmail.com" aria-label="Copy email address">
+                <svg class="icon" aria-hidden="true"><use href="#i-copy"/></svg>
+              </button>
+            </li>
+            <li class="contact-item">
+              <span class="icon-tile" aria-hidden="true"><svg class="icon"><use href="#i-phone"/></svg></span>
+              <div class="contact-body">
+                <span class="contact-label">Phone</span>
+                <a class="contact-value" href="tel:+998999206525">+998&nbsp;(99)&nbsp;920&#8209;65&#8209;25</a>
+              </div>
+              <button class="icon-btn copy-btn" type="button" data-copy="+998 99 920 65 25" aria-label="Copy phone number">
+                <svg class="icon" aria-hidden="true"><use href="#i-copy"/></svg>
+              </button>
+            </li>
+            <li class="contact-item">
+              <span class="icon-tile" aria-hidden="true"><svg class="icon"><use href="#i-telegram"/></svg></span>
+              <div class="contact-body">
+                <span class="contact-label">Telegram</span>
+                <a class="contact-value" href="https://t.me/bkm100" target="_blank" rel="noopener">@bkm100</a>
+              </div>
+              <a class="icon-btn" href="https://t.me/bkm100" target="_blank" rel="noopener" aria-label="Open Telegram chat" tabindex="-1">
+                <svg class="icon" aria-hidden="true"><use href="#i-arrow-up-right"/></svg>
+              </a>
+            </li>
+            <li class="contact-item">
+              <span class="icon-tile" aria-hidden="true"><svg class="icon"><use href="#i-linkedin"/></svg></span>
+              <div class="contact-body">
+                <span class="contact-label">LinkedIn</span>
+                <a class="contact-value" href="https://www.linkedin.com/in/ibkm-dev" target="_blank" rel="noopener">linkedin.com/in/ibkm-dev</a>
+              </div>
+              <a class="icon-btn" href="https://www.linkedin.com/in/ibkm-dev" target="_blank" rel="noopener" aria-label="Open LinkedIn profile" tabindex="-1">
+                <svg class="icon" aria-hidden="true"><use href="#i-arrow-up-right"/></svg>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <p>© <span data-year>2026</span> Ibrohim Sirojiddinov · Node.js Backend Developer</p>
+      <div class="social-row">
+        <a class="icon-btn" href="https://t.me/bkm100" target="_blank" rel="noopener" aria-label="Telegram"><svg class="icon" aria-hidden="true"><use href="#i-telegram"/></svg></a>
+        <a class="icon-btn" href="https://www.linkedin.com/in/ibkm-dev" target="_blank" rel="noopener" aria-label="LinkedIn"><svg class="icon" aria-hidden="true"><use href="#i-linkedin"/></svg></a>
+        <a class="icon-btn" href="mailto:sironiddinooov@gmail.com" aria-label="Email"><svg class="icon" aria-hidden="true"><use href="#i-mail"/></svg></a>
+      </div>
+    </div>
+  </footer>
+
+  <button class="to-top" type="button" data-to-top aria-label="Back to top">
+    <svg class="icon" aria-hidden="true"><use href="#i-arrow-up"/></svg>
+  </button>
+
+  <div class="toast" data-toast role="status" aria-live="polite">
+    <svg class="icon" aria-hidden="true"><use href="#i-check-circle"/></svg>
+    <span data-toast-text></span>
+  </div>
+</body>
+</html>
