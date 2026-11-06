@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://ibrohim-sirojiddinov.vercel.app/</loc></url>
+  <url><loc>https://ibrohim-sirojiddinov.vercel.app/about</loc></url>
+  <url><loc>https://ibrohim-sirojiddinov.vercel.app/services</loc></url>
+  <url><loc>https://ibrohim-sirojiddinov.vercel.app/projects</loc></url>
+  <url><loc>https://ibrohim-sirojiddinov.vercel.app/blog</loc></url>
+  <url><loc>https://ibrohim-sirojiddinov.vercel.app/reviews</loc></url>
+  <url><loc>https://ibrohim-sirojiddinov.vercel.app/contact</loc></url>
+  <url><loc>https://ibrohim-sirojiddinov.vercel.app/privacy</loc></url>
+  <url><loc>https://ibrohim-sirojiddinov.vercel.app/posts/building-m-system</loc></url>
+  <url><loc>https://ibrohim-sirojiddinov.vercel.app/posts/rbac-for-node-apis</loc></url>
+  <url><loc>https://ibrohim-sirojiddinov.vercel.app/posts/otp-2fa-fastify-redis</loc></url>
+  <url><loc>https://ibrohim-sirojiddinov.vercel.app/posts/spec-driven-apis-openapi</loc></url>
+  <url><loc>https://ibrohim-sirojiddinov.vercel.app/posts/status-history-audit-logs-postgres</loc></url>
+  <url><loc>https://ibrohim-sirojiddinov.vercel.app/posts/ai-agents-backend-workflow</loc></url>
+</urlset>

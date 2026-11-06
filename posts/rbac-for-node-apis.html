@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>RBAC for Node.js APIs: roles, permissions and middleware that scale · Ibrohim Sirojiddinov</title>
+  <meta name="description" content="Roles describe people; permissions describe actions. How I model RBAC in PostgreSQL, enforce it with Express middleware, cache it in Redis and keep data scoped to the right organization.">
+  <meta name="author" content="Ibrohim Sirojiddinov">
+  <meta name="theme-color" content="#030712">
+  <meta name="color-scheme" content="dark">
+
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Ibrohim Sirojiddinov">
+  <meta property="og:title" content="RBAC for Node.js APIs: roles, permissions and middleware that scale">
+  <meta property="og:description" content="Roles describe people; permissions describe actions. How I model RBAC in PostgreSQL, enforce it with Express middleware, cache it in Redis and keep data scoped to the right organization.">
+  <meta property="og:url" content="https://ibrohim-sirojiddinov.vercel.app/posts/rbac-for-node-apis">
+  <meta property="og:image" content="https://ibrohim-sirojiddinov.vercel.app/assets/img/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Ibrohim Sirojiddinov, Backend Software Engineer (Node.js), Tashkent">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="../assets/img/apple-touch-icon.png">
+  <link rel="preload" href="../assets/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../assets/fonts/fira-code-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <script>document.documentElement.classList.replace('no-js', 'js');</script>
+  <script src="../assets/js/main.js" defer onerror="document.documentElement.classList.replace('js', 'no-js')"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "RBAC for Node.js APIs: roles, permissions and middleware that scale",
+    "description": "Roles describe people; permissions describe actions. How I model RBAC in PostgreSQL, enforce it with Express middleware, cache it in Redis and keep data scoped to the right organization.",
+    "datePublished": "2026-11-06",
+    "dateModified": "2026-11-06",
+    "author": { "@type": "Person", "name": "Ibrohim Sirojiddinov", "url": "https://ibrohim-sirojiddinov.vercel.app/" },
+    "image": "https://ibrohim-sirojiddinov.vercel.app/assets/img/og-image.png",
+    "mainEntityOfPage": "https://ibrohim-sirojiddinov.vercel.app/posts/rbac-for-node-apis",
+    "keywords": "Node.js, RBAC, Security"
+  }
+  </script>
+</head>
+<body>
+  <svg class="sprite" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg"><symbol id="i-arrow-up" viewBox="0 0 24 24"><path d="M12 19V5"/><path d="m6 11 6-6 6 6"/></symbol><symbol id="i-book" viewBox="0 0 24 24"><path d="M2 5h6a4 4 0 0 1 4 4v11a3 3 0 0 0-3-3H2z"/><path d="M22 5h-6a4 4 0 0 0-4 4v11a3 3 0 0 1 3-3h7z"/></symbol><symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></symbol><symbol id="i-check-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></symbol><symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></symbol><symbol id="i-code" viewBox="0 0 24 24"><path d="m8 8-4 4 4 4"/><path d="m16 8 4 4-4 4"/><path d="m14 4-4 16"/></symbol><symbol id="i-coffee" viewBox="0 0 24 24"><path d="M4 9h13v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z"/><path d="M17 10.5h1.5a2.5 2.5 0 0 1 0 5H17"/><path d="M8 2.5v3M12 2.5v3"/></symbol><symbol id="i-file-code" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="m10 12.5-2 2 2 2"/><path d="m14 12.5 2 2-2 2"/></symbol><symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 6.5a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2V18a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol><symbol id="i-heart" viewBox="0 0 24 24"><path d="M12 20s-7.5-4.6-9.3-9.4A5 5 0 0 1 12 6.2a5 5 0 0 1 9.3 4.4C19.5 15.4 12 20 12 20z"/></symbol><symbol id="i-link" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></symbol><symbol id="i-linkedin" viewBox="0 0 24 24"><path d="M8 11v5"/><path d="M8 8v.01"/><path d="M12 16v-5"/><path d="M16 16v-3a2 2 0 1 0-4 0"/><path d="M3 7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4z"/></symbol><symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/><path d="M12 15v2"/></symbol><symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></symbol><symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol><symbol id="i-message" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></symbol><symbol id="i-phone" viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></symbol><symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></symbol><symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6l-8-3z"/><path d="m9 12 2 2 4-4"/></symbol><symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/></symbol><symbol id="i-telegram" viewBox="0 0 24 24"><path d="m15 10-4 4 6 6 4-16-18 7 4 2 2 6 3-4"/></symbol><symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol><symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol></svg>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div class="read-progress" data-read-progress aria-hidden="true"></div>
+
+  <header class="site-header" data-header>
+    <div class="container">
+      <nav class="nav" aria-label="Main">
+        <a class="brand" href="../index.html"><svg class="icon led-glow" aria-hidden="true" focusable="false"><use href="#i-code"/></svg><span>Ibrohim Sirojiddinov</span></a>
+        <ul class="nav-links">
+          <li><a class="nav-link" href="../about.html">About</a></li>
+          <li><a class="nav-link" href="../services.html">Services</a></li>
+          <li><a class="nav-link" href="../projects.html">Projects</a></li>
+          <li><a class="nav-link" href="../blog.html" aria-current="page">Blog</a></li>
+          <li><a class="nav-link" href="../reviews.html">Reviews</a></li>
+          <li><a class="nav-link" href="../contact.html">Contact</a></li>
+        </ul>
+        <button class="menu-toggle" type="button" data-menu-toggle aria-expanded="false" aria-controls="mobile-menu" aria-label="Open menu"><svg class="icon icon-open" aria-hidden="true" focusable="false"><use href="#i-menu"/></svg><svg class="icon icon-close" aria-hidden="true" focusable="false"><use href="#i-x"/></svg></button>
+      </nav>
+    </div>
+    <nav class="mobile-menu" id="mobile-menu" data-menu aria-label="Mobile">
+      <a href="../about.html"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-user"/></svg>About</a>
+      <a href="../services.html"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-sliders"/></svg>Services</a>
+      <a href="../projects.html"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-folder"/></svg>Projects</a>
+      <a href="../blog.html" aria-current="page"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-book"/></svg>Blog</a>
+      <a href="../reviews.html"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-message"/></svg>Reviews</a>
+      <a href="../contact.html"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-mail"/></svg>Contact</a>
+    </nav>
+  </header>
+
+  <main id="main">
+
+    <div class="page">
+      <section class="page-section">
+        <div class="container">
+          <article class="post-wrap" data-article aria-labelledby="post-title">
+            <nav class="breadcrumbs" aria-label="Breadcrumb">
+              <a href="../index.html">home</a><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-chevron-right"/></svg><a href="../blog.html">blog</a><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-chevron-right"/></svg><span aria-current="page">rbac-for-node-apis</span>
+            </nav>
+            <header class="post-head">
+              <h1 id="post-title" data-animate>RBAC for Node.js APIs: roles, permissions and middleware that scale</h1>
+              <p class="post-info" data-animate style="--delay:.1s"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-calendar"/></svg><time datetime="2026-11-06">Nov 2026</time><span class="sep">|</span><span>5 min read</span><span class="sep">|</span><a class="link-arrow" href="../blog.html#security">Security</a></p>
+            </header>
+
+            <div class="cover post-hero" style="--c1:rgb(57 211 83 / .26);--c2:rgb(81 162 255 / .22)" aria-hidden="true">
+  <div class="cover-type"><svg class="icon led-glow" aria-hidden="true" focusable="false"><use href="#i-shield"/></svg><strong>RBAC</strong><small>authorize(&#39;ticket:update&#39;)</small></div>
+</div>
+
+            <div class="prose">
+<p>Authentication answers <em>who is calling</em>. Authorization answers <em>what they are allowed to do</em>, and that second question is where most API security problems hide. At Telecom Soft I implemented role-based access control (RBAC) to strengthen API security, access control and data protection, and I have since used the same approach in M-System and in a B2B ticketing module.</p>
+<p>Here is the model I use, the Express middleware that enforces it and the details that make it hold up in production.</p>
+<h2>Roles describe people, permissions describe actions</h2>
+<p>The core idea of RBAC is one level of indirection. Instead of checking &ldquo;is this user an admin?&rdquo; all over the codebase, you check for a <strong>permission</strong>, and roles are simply named bundles of permissions.</p>
+<ul>
+<li>A <strong>permission</strong> is an action on a resource: <code>ticket:read</code>, <code>ticket:update</code>, <code>project:delete</code>, <code>report:read-all</code>.</li>
+<li>A <strong>role</strong> groups permissions: <em>viewer</em>, <em>member</em>, <em>manager</em>, <em>admin</em>.</li>
+<li>A <strong>user</strong> has one or more roles.</li>
+</ul>
+<p>The code only ever asks for permissions. Roles can change, be split or be renamed without touching a single route.</p>
+<h2>The schema</h2>
+<p>Three entities and two join tables are enough:</p>
+<div class="code-block"><span class="code-lang">sql</span><pre class="hl" tabindex="0"><code><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">roles</span><span class="w"> </span><span class="p">(</span>
+<span class="w">  </span><span class="n">id</span><span class="w">   </span><span class="nb">SERIAL</span><span class="w"> </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="p">,</span>
+<span class="w">  </span><span class="k">name</span><span class="w"> </span><span class="nb">VARCHAR</span><span class="p">(</span><span class="mf">50</span><span class="p">)</span><span class="w"> </span><span class="k">UNIQUE</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span>
+<span class="p">);</span>
+
+<span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">permissions</span><span class="w"> </span><span class="p">(</span>
+<span class="w">  </span><span class="n">id</span><span class="w">   </span><span class="nb">SERIAL</span><span class="w"> </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="p">,</span>
+<span class="w">  </span><span class="k">name</span><span class="w"> </span><span class="nb">VARCHAR</span><span class="p">(</span><span class="mf">100</span><span class="p">)</span><span class="w"> </span><span class="k">UNIQUE</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w">   </span><span class="c1">-- e.g. 'ticket:update'</span>
+<span class="p">);</span>
+
+<span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">role_permissions</span><span class="w"> </span><span class="p">(</span>
+<span class="w">  </span><span class="n">role_id</span><span class="w">       </span><span class="nb">INT</span><span class="w"> </span><span class="k">REFERENCES</span><span class="w"> </span><span class="n">roles</span><span class="p">(</span><span class="n">id</span><span class="p">)</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="k">DELETE</span><span class="w"> </span><span class="k">CASCADE</span><span class="p">,</span>
+<span class="w">  </span><span class="n">permission_id</span><span class="w"> </span><span class="nb">INT</span><span class="w"> </span><span class="k">REFERENCES</span><span class="w"> </span><span class="n">permissions</span><span class="p">(</span><span class="n">id</span><span class="p">)</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="k">DELETE</span><span class="w"> </span><span class="k">CASCADE</span><span class="p">,</span>
+<span class="w">  </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="n">role_id</span><span class="p">,</span><span class="w"> </span><span class="n">permission_id</span><span class="p">)</span>
+<span class="p">);</span>
+
+<span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">user_roles</span><span class="w"> </span><span class="p">(</span>
+<span class="w">  </span><span class="n">user_id</span><span class="w"> </span><span class="nb">INT</span><span class="w"> </span><span class="k">REFERENCES</span><span class="w"> </span><span class="n">users</span><span class="p">(</span><span class="n">id</span><span class="p">)</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="k">DELETE</span><span class="w"> </span><span class="k">CASCADE</span><span class="p">,</span>
+<span class="w">  </span><span class="n">role_id</span><span class="w"> </span><span class="nb">INT</span><span class="w"> </span><span class="k">REFERENCES</span><span class="w"> </span><span class="n">roles</span><span class="p">(</span><span class="n">id</span><span class="p">)</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="k">DELETE</span><span class="w"> </span><span class="k">CASCADE</span><span class="p">,</span>
+<span class="w">  </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="n">user_id</span><span class="p">,</span><span class="w"> </span><span class="n">role_id</span><span class="p">)</span>
+<span class="p">);</span></code></pre></div>
+<p>In Sequelize these become many-to-many associations (with <code>underscored: true</code>, so the foreign keys match the snake_case columns):</p>
+<div class="code-block"><span class="code-lang">js</span><pre class="hl" tabindex="0"><code><span class="c1">// models/index.js</span>
+<span class="nx">User</span><span class="p">.</span><span class="nx">belongsToMany</span><span class="p">(</span><span class="nx">Role</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">through</span><span class="o">:</span><span class="w"> </span><span class="s1">'user_roles'</span><span class="p">,</span><span class="w"> </span><span class="kr">as</span><span class="o">:</span><span class="w"> </span><span class="s1">'roles'</span><span class="w"> </span><span class="p">});</span>
+<span class="nx">Role</span><span class="p">.</span><span class="nx">belongsToMany</span><span class="p">(</span><span class="nx">User</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">through</span><span class="o">:</span><span class="w"> </span><span class="s1">'user_roles'</span><span class="p">,</span><span class="w"> </span><span class="kr">as</span><span class="o">:</span><span class="w"> </span><span class="s1">'users'</span><span class="w"> </span><span class="p">});</span>
+<span class="nx">Role</span><span class="p">.</span><span class="nx">belongsToMany</span><span class="p">(</span><span class="nx">Permission</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">through</span><span class="o">:</span><span class="w"> </span><span class="s1">'role_permissions'</span><span class="p">,</span><span class="w"> </span><span class="kr">as</span><span class="o">:</span><span class="w"> </span><span class="s1">'permissions'</span><span class="w"> </span><span class="p">});</span></code></pre></div>
+<h2>Loading permissions, with a Redis cache</h2>
+<p>Permissions are read on almost every request, so they are a perfect candidate for caching. I load the flattened permission names for a user once, keep them in Redis for a few minutes and invalidate the key when that user&rsquo;s roles change.</p>
+<div class="code-block"><span class="code-lang">js</span><pre class="hl" tabindex="0"><code><span class="c1">// rbac/permissions.js</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">redis</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">'../lib/redis.js'</span><span class="p">;</span><span class="w">        </span><span class="c1">// ioredis client</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">Role</span><span class="p">,</span><span class="w"> </span><span class="nx">Permission</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">'../models/index.js'</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">TTL_SECONDS</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">300</span><span class="p">;</span>
+
+<span class="k">export</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">getPermissions</span><span class="p">(</span><span class="nx">userId</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sb">`perms:</span><span class="si">${</span><span class="nx">userId</span><span class="si">}</span><span class="sb">`</span><span class="p">;</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">cached</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">redis</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="nx">key</span><span class="p">);</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">cached</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nb">Set</span><span class="p">(</span><span class="nb">JSON</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="nx">cached</span><span class="p">));</span>
+
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">roles</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">Role</span><span class="p">.</span><span class="nx">findAll</span><span class="p">({</span>
+<span class="w">    </span><span class="nx">include</span><span class="o">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">      </span><span class="p">{</span><span class="w"> </span><span class="nx">association</span><span class="o">:</span><span class="w"> </span><span class="s1">'users'</span><span class="p">,</span><span class="w"> </span><span class="nx">where</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">id</span><span class="o">:</span><span class="w"> </span><span class="nx">userId</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="nx">attributes</span><span class="o">:</span><span class="w"> </span><span class="p">[]</span><span class="w"> </span><span class="p">},</span>
+<span class="w">      </span><span class="p">{</span><span class="w"> </span><span class="nx">model</span><span class="o">:</span><span class="w"> </span><span class="nx">Permission</span><span class="p">,</span><span class="w"> </span><span class="kr">as</span><span class="o">:</span><span class="w"> </span><span class="s1">'permissions'</span><span class="p">,</span><span class="w"> </span><span class="nx">attributes</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s1">'name'</span><span class="p">],</span><span class="w"> </span><span class="nx">through</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">attributes</span><span class="o">:</span><span class="w"> </span><span class="p">[]</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="p">],</span>
+<span class="w">  </span><span class="p">});</span>
+
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">names</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[...</span><span class="ow">new</span><span class="w"> </span><span class="nb">Set</span><span class="p">(</span><span class="nx">roles</span><span class="p">.</span><span class="nx">flatMap</span><span class="p">((</span><span class="nx">role</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">role</span><span class="p">.</span><span class="nx">permissions</span><span class="p">.</span><span class="nx">map</span><span class="p">((</span><span class="nx">p</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">p</span><span class="p">.</span><span class="nx">name</span><span class="p">)))];</span>
+<span class="w">  </span><span class="k">await</span><span class="w"> </span><span class="nx">redis</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="nx">key</span><span class="p">,</span><span class="w"> </span><span class="nb">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">(</span><span class="nx">names</span><span class="p">),</span><span class="w"> </span><span class="s1">'EX'</span><span class="p">,</span><span class="w"> </span><span class="nx">TTL_SECONDS</span><span class="p">);</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nb">Set</span><span class="p">(</span><span class="nx">names</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="k">export</span><span class="w"> </span><span class="kd">const</span><span class="w"> </span><span class="nx">invalidatePermissions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="nx">userId</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">redis</span><span class="p">.</span><span class="nx">del</span><span class="p">(</span><span class="sb">`perms:</span><span class="si">${</span><span class="nx">userId</span><span class="si">}</span><span class="sb">`</span><span class="p">);</span></code></pre></div>
+<h2>The middleware</h2>
+<p><code>authorize()</code> runs after <code>authenticate()</code> has verified the JWT and attached <code>req.user</code>. It is small on purpose:</p>
+<div class="code-block"><span class="code-lang">js</span><pre class="hl" tabindex="0"><code><span class="c1">// middleware/authorize.js</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">getPermissions</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">'../rbac/permissions.js'</span><span class="p">;</span>
+
+<span class="k">export</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">authorize</span><span class="p">(...</span><span class="nx">required</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="p">(</span><span class="nx">req</span><span class="p">,</span><span class="w"> </span><span class="nx">res</span><span class="p">,</span><span class="w"> </span><span class="nx">next</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">try</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="nx">req</span><span class="p">.</span><span class="nx">user</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nx">res</span><span class="p">.</span><span class="nx">status</span><span class="p">(</span><span class="mf">401</span><span class="p">).</span><span class="nx">json</span><span class="p">({</span><span class="w"> </span><span class="nx">error</span><span class="o">:</span><span class="w"> </span><span class="s1">'UNAUTHENTICATED'</span><span class="w"> </span><span class="p">});</span>
+<span class="w">      </span><span class="p">}</span>
+
+<span class="w">      </span><span class="kd">const</span><span class="w"> </span><span class="nx">granted</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">getPermissions</span><span class="p">(</span><span class="nx">req</span><span class="p">.</span><span class="nx">user</span><span class="p">.</span><span class="nx">id</span><span class="p">);</span>
+<span class="w">      </span><span class="kd">const</span><span class="w"> </span><span class="nx">missing</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">required</span><span class="p">.</span><span class="nx">filter</span><span class="p">((</span><span class="nx">permission</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="o">!</span><span class="nx">granted</span><span class="p">.</span><span class="nx">has</span><span class="p">(</span><span class="nx">permission</span><span class="p">));</span>
+
+<span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">missing</span><span class="p">.</span><span class="nx">length</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mf">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nx">req</span><span class="p">.</span><span class="nx">log</span><span class="o">?</span><span class="p">.</span><span class="nx">warn</span><span class="p">({</span><span class="w"> </span><span class="nx">userId</span><span class="o">:</span><span class="w"> </span><span class="nx">req</span><span class="p">.</span><span class="nx">user</span><span class="p">.</span><span class="nx">id</span><span class="p">,</span><span class="w"> </span><span class="nx">missing</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="s1">'rbac: access denied'</span><span class="p">);</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nx">res</span><span class="p">.</span><span class="nx">status</span><span class="p">(</span><span class="mf">403</span><span class="p">).</span><span class="nx">json</span><span class="p">({</span><span class="w"> </span><span class="nx">error</span><span class="o">:</span><span class="w"> </span><span class="s1">'FORBIDDEN'</span><span class="w"> </span><span class="p">});</span>
+<span class="w">      </span><span class="p">}</span>
+
+<span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="nx">next</span><span class="p">();</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="nx">err</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="nx">next</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">};</span>
+<span class="p">}</span></code></pre></div>
+<p>Using it reads almost like documentation:</p>
+<div class="code-block"><span class="code-lang">js</span><pre class="hl" tabindex="0"><code><span class="nx">router</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">'/tickets'</span><span class="p">,</span><span class="w"> </span><span class="nx">authenticate</span><span class="p">,</span><span class="w"> </span><span class="nx">authorize</span><span class="p">(</span><span class="s1">'ticket:read'</span><span class="p">),</span><span class="w"> </span><span class="nx">ticketController</span><span class="p">.</span><span class="nx">list</span><span class="p">);</span>
+<span class="nx">router</span><span class="p">.</span><span class="nx">patch</span><span class="p">(</span><span class="s1">'/tickets/:id/status'</span><span class="p">,</span><span class="w"> </span><span class="nx">authenticate</span><span class="p">,</span><span class="w"> </span><span class="nx">authorize</span><span class="p">(</span><span class="s1">'ticket:update'</span><span class="p">),</span><span class="w"> </span><span class="nx">ticketController</span><span class="p">.</span><span class="nx">changeStatus</span><span class="p">);</span>
+<span class="nx">router</span><span class="p">.</span><span class="ow">delete</span><span class="p">(</span><span class="s1">'/projects/:id'</span><span class="p">,</span><span class="w"> </span><span class="nx">authenticate</span><span class="p">,</span><span class="w"> </span><span class="nx">authorize</span><span class="p">(</span><span class="s1">'project:delete'</span><span class="p">),</span><span class="w"> </span><span class="nx">projectController</span><span class="p">.</span><span class="nx">remove</span><span class="p">);</span></code></pre></div>
+<p>Notice that the response for a denied request does not list which permissions were missing. That detail goes to the logs, not to the client.</p>
+<h2>Roles are not enough: scope every query</h2>
+<p>RBAC says a support agent may read tickets. It does not say <em>which</em> tickets. In a B2B system the answer is &ldquo;only those of their own organization&rdquo;, and that check belongs in the data access layer, not in the controller:</p>
+<div class="code-block"><span class="code-lang">js</span><pre class="hl" tabindex="0"><code><span class="c1">// tickets/ticket.service.js</span>
+<span class="k">export</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">getTicket</span><span class="p">(</span><span class="nx">id</span><span class="p">,</span><span class="w"> </span><span class="nx">actor</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">ticket</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">Ticket</span><span class="p">.</span><span class="nx">findOne</span><span class="p">({</span>
+<span class="w">    </span><span class="nx">where</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">id</span><span class="p">,</span><span class="w"> </span><span class="nx">organizationId</span><span class="o">:</span><span class="w"> </span><span class="nx">actor</span><span class="p">.</span><span class="nx">organizationId</span><span class="w"> </span><span class="p">},</span>
+<span class="w">  </span><span class="p">});</span>
+
+<span class="w">  </span><span class="c1">// 404, not 403: don't confirm that another organization's ticket exists</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="nx">ticket</span><span class="p">)</span><span class="w"> </span><span class="k">throw</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">NotFoundError</span><span class="p">(</span><span class="s1">'Ticket not found'</span><span class="p">);</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="nx">ticket</span><span class="p">;</span>
+<span class="p">}</span></code></pre></div>
+<p>If the scope lives in the query, a forgotten check cannot leak another customer&rsquo;s data, because the row is never loaded in the first place.</p>
+<h2>Make the permission matrix visible</h2>
+<p>A table in the documentation prevents most arguments about &ldquo;who should be able to do what&rdquo;:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Permission</th>
+<th style="text-align: center;">Viewer</th>
+<th style="text-align: center;">Member</th>
+<th style="text-align: center;">Manager</th>
+<th style="text-align: center;">Admin</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>project:read</code></td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;">✓</td>
+</tr>
+<tr>
+<td><code>task:update</code></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;">✓</td>
+</tr>
+<tr>
+<td><code>report:read-all</code></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;">✓</td>
+</tr>
+<tr>
+<td><code>project:delete</code></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;">✓</td>
+</tr>
+</tbody>
+</table></div>
+<p>The same matrix drives the seed data and a test that calls each protected endpoint with each role and expects <code>2xx</code> or <code>403</code>. When someone changes a role, the test shows exactly what changed.</p>
+<h2>A short checklist</h2>
+<ol>
+<li><strong>Deny by default.</strong> A route without <code>authorize()</code> should fail review.</li>
+<li><strong>Check on the server.</strong> Hiding a button in the UI is a convenience, not security.</li>
+<li><strong>Scope every query</strong> to the user&rsquo;s organization or project.</li>
+<li><strong>Return 404 for out-of-scope resources</strong> so IDs cannot be probed.</li>
+<li><strong>Cache permissions, and invalidate on role changes.</strong></li>
+<li><strong>Log denials</strong> with the user and the missing permission. A burst of <code>403</code>s is often the first sign of a bug or of someone probing your API.</li>
+<li><strong>Keep roles few and permissions many.</strong> Fine-grained permissions are cheap; a new role for every exception is not.</li>
+</ol>
+<p>RBAC is not glamorous, but it is one of the highest-leverage things you can build into a backend. Once it is in place, every new endpoint is secure by default instead of secure by memory.</p>
+            </div>
+
+            <div class="post-tags"><ul class="tags"><li class="tag">Node.js</li><li class="tag">RBAC</li><li class="tag">Security</li></ul></div>
+
+            <aside class="card author-box" data-animate aria-label="About the author">
+              <img src="../assets/img/ibrohim.jpg" alt="" width="72" height="72" loading="lazy">
+              <div>
+                <h2>Ibrohim Sirojiddinov</h2>
+                <p>Backend Software Engineer (Node.js) at Telecom Soft in Tashkent. I build secure REST APIs, data models and internal platforms, and I write about what I learn along the way.</p>
+                <div class="socials">
+                  <a href="https://www.linkedin.com/in/ibkm-dev" target="_blank" rel="noopener" aria-label="LinkedIn"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-linkedin"/></svg></a>
+                  <a href="https://t.me/bkm100" target="_blank" rel="noopener" aria-label="Telegram"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-telegram"/></svg></a>
+                  <a href="mailto:sironiddinooov@gmail.com" aria-label="Email"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-mail"/></svg></a>
+                </div>
+              </div>
+            </aside>
+
+            <section class="related" aria-labelledby="related-title">
+              <h2 id="related-title"><svg class="icon led-glow" aria-hidden="true" focusable="false"><use href="#i-book"/></svg> Related Articles</h2>
+              <div class="related-list">
+                <a class="card card-hover related-item" href="otp-2fa-fastify-redis.html" data-animate style="--delay:0.0s">
+                  <div class="cover" style="--c1:rgb(255 100 103 / .22);--c2:rgb(57 211 83 / .22)" aria-hidden="true">
+  <div class="cover-type"><svg class="icon led-glow" aria-hidden="true" focusable="false"><use href="#i-lock"/></svg><strong>2FA</strong><small>SET 2fa:{id} … EX 120</small></div>
+</div>
+                  <div class="related-body">
+                    <h3>OTP two-step verification with Fastify and Redis</h3>
+                    <p>A second factor that is secure and pleasant to use: Redis-backed challenges, OTP expiry, retry and resend limits…</p>
+                    <p class="post-date"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-calendar"/></svg><span>Nov 2026</span><span class="sep">|</span><span>5 min read</span></p>
+                  </div>
+                </a>
+                <a class="card card-hover related-item" href="spec-driven-apis-openapi.html" data-animate style="--delay:0.1s">
+                  <div class="cover" style="--c1:rgb(133 234 45 / .22);--c2:rgb(0 211 242 / .18)" aria-hidden="true">
+  <div class="cover-type"><svg class="icon led-glow" aria-hidden="true" focusable="false"><use href="#i-file-code"/></svg><strong>OpenAPI</strong><small>contract first, code second</small></div>
+</div>
+                  <div class="related-body">
+                    <h3>Spec-driven API development with OpenAPI and Swagger</h3>
+                    <p>Writing the contract before the code: how OpenAPI specs, JSON Schema validation and Swagger UI keep backend, frontend…</p>
+                    <p class="post-date"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-calendar"/></svg><span>Nov 2026</span><span class="sep">|</span><span>4 min read</span></p>
+                  </div>
+                </a>
+              </div>
+            </section>
+          </article>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="site-footer pattern-code">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-about">
+          <p class="footer-brand"><svg class="icon led-glow" aria-hidden="true" focusable="false"><use href="#i-code"/></svg><span>Ibrohim Sirojiddinov</span></p>
+          <p>Backend Software Engineer (Node.js) in Tashkent. I build secure, well-documented REST APIs and database-driven systems that teams can rely on.</p>
+          <div class="socials">
+            <a href="https://www.linkedin.com/in/ibkm-dev" target="_blank" rel="noopener" aria-label="LinkedIn"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-linkedin"/></svg></a>
+            <a href="https://t.me/bkm100" target="_blank" rel="noopener" aria-label="Telegram"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-telegram"/></svg></a>
+            <a href="mailto:sironiddinooov@gmail.com" aria-label="Email"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-mail"/></svg></a>
+            <a href="tel:+998999206525" aria-label="Phone"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-phone"/></svg></a>
+          </div>
+        </div>
+        <div class="footer-col">
+          <h2><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-link"/></svg> Quick Links</h2>
+          <ul class="footer-links">
+            <li><a href="../about.html"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-user"/></svg> About</a></li>
+            <li><a href="../services.html"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-sliders"/></svg> Services</a></li>
+            <li><a href="../projects.html"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-folder"/></svg> Projects</a></li>
+            <li><a href="../blog.html"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-book"/></svg> Blog</a></li>
+            <li><a href="../reviews.html"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-message"/></svg> Reviews</a></li>
+            <li><a href="../contact.html"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-mail"/></svg> Contact</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h2><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-mail"/></svg> Get in Touch</h2>
+          <ul class="footer-contact">
+            <li><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-mail"/></svg><a href="mailto:sironiddinooov@gmail.com">sironiddinooov@gmail.com</a></li>
+            <li><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-phone"/></svg><a href="tel:+998999206525">+998 (99) 920-65-25</a></li>
+            <li><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-telegram"/></svg><a href="https://t.me/bkm100" target="_blank" rel="noopener">@bkm100</a></li>
+            <li><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-pin"/></svg><span>Tashkent, Uzbekistan</span></li>
+          </ul>
+          <p class="footer-status"><span class="pulse-dot" aria-hidden="true"></span>Open to Node.js backend roles</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; <span data-year>2026</span> Ibrohim Sirojiddinov. Crafted with <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-heart"/></svg><span class="visually-hidden">love</span> and <span class="nowrap"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-coffee"/></svg><span class="visually-hidden">coffee</span>.</span></p>
+        <nav aria-label="Footer">
+          <a href="../privacy.html">Privacy</a>
+          <a href="../assets/Ibrohim-Sirojiddinov-CV.pdf" download>Download CV</a>
+        </nav>
+      </div>
+    </div>
+  </footer>
+
+  <button class="to-top" type="button" data-to-top aria-label="Back to top"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-arrow-up"/></svg></button>
+  <div class="toast" data-toast role="status" aria-live="polite"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-check-circle"/></svg><span data-toast-text></span></div>
+</body>
+</html>

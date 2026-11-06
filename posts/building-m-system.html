@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Building M-System: an internal alternative to Notion for our team · Ibrohim Sirojiddinov</title>
+  <meta name="description" content="How I designed and shipped an internal platform for projects, tasks and daily reports: RBAC, structured workflows, AI-agentic features and an estimated 20% boost in team workflow efficiency.">
+  <meta name="author" content="Ibrohim Sirojiddinov">
+  <meta name="theme-color" content="#030712">
+  <meta name="color-scheme" content="dark">
+
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Ibrohim Sirojiddinov">
+  <meta property="og:title" content="Building M-System: an internal alternative to Notion for our team">
+  <meta property="og:description" content="How I designed and shipped an internal platform for projects, tasks and daily reports: RBAC, structured workflows, AI-agentic features and an estimated 20% boost in team workflow efficiency.">
+  <meta property="og:url" content="https://ibrohim-sirojiddinov.vercel.app/posts/building-m-system">
+  <meta property="og:image" content="https://ibrohim-sirojiddinov.vercel.app/assets/img/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Ibrohim Sirojiddinov, Backend Software Engineer (Node.js), Tashkent">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="../assets/img/apple-touch-icon.png">
+  <link rel="preload" href="../assets/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../assets/fonts/fira-code-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <script>document.documentElement.classList.replace('no-js', 'js');</script>
+  <script src="../assets/js/main.js" defer onerror="document.documentElement.classList.replace('js', 'no-js')"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "Building M-System: an internal alternative to Notion for our team",
+    "description": "How I designed and shipped an internal platform for projects, tasks and daily reports: RBAC, structured workflows, AI-agentic features and an estimated 20% boost in team workflow efficiency.",
+    "datePublished": "2026-11-06",
+    "dateModified": "2026-11-06",
+    "author": { "@type": "Person", "name": "Ibrohim Sirojiddinov", "url": "https://ibrohim-sirojiddinov.vercel.app/" },
+    "image": "https://ibrohim-sirojiddinov.vercel.app/assets/img/og-image.png",
+    "mainEntityOfPage": "https://ibrohim-sirojiddinov.vercel.app/posts/building-m-system",
+    "keywords": "Express.js, PostgreSQL, Case study"
+  }
+  </script>
+</head>
+<body>
+  <svg class="sprite" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg"><symbol id="i-arrow-up" viewBox="0 0 24 24"><path d="M12 19V5"/><path d="m6 11 6-6 6 6"/></symbol><symbol id="i-book" viewBox="0 0 24 24"><path d="M2 5h6a4 4 0 0 1 4 4v11a3 3 0 0 0-3-3H2z"/><path d="M22 5h-6a4 4 0 0 0-4 4v11a3 3 0 0 1 3-3h7z"/></symbol><symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></symbol><symbol id="i-check-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></symbol><symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></symbol><symbol id="i-code" viewBox="0 0 24 24"><path d="m8 8-4 4 4 4"/><path d="m16 8 4 4-4 4"/><path d="m14 4-4 16"/></symbol><symbol id="i-coffee" viewBox="0 0 24 24"><path d="M4 9h13v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z"/><path d="M17 10.5h1.5a2.5 2.5 0 0 1 0 5H17"/><path d="M8 2.5v3M12 2.5v3"/></symbol><symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 6.5a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2V18a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol><symbol id="i-heart" viewBox="0 0 24 24"><path d="M12 20s-7.5-4.6-9.3-9.4A5 5 0 0 1 12 6.2a5 5 0 0 1 9.3 4.4C19.5 15.4 12 20 12 20z"/></symbol><symbol id="i-kanban" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 7v7M12 7v3M16 7v9"/></symbol><symbol id="i-link" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></symbol><symbol id="i-linkedin" viewBox="0 0 24 24"><path d="M8 11v5"/><path d="M8 8v.01"/><path d="M12 16v-5"/><path d="M16 16v-3a2 2 0 1 0-4 0"/><path d="M3 7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4z"/></symbol><symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/><path d="M12 15v2"/></symbol><symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></symbol><symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol><symbol id="i-message" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></symbol><symbol id="i-phone" viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></symbol><symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></symbol><symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6l-8-3z"/><path d="m9 12 2 2 4-4"/></symbol><symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/></symbol><symbol id="i-telegram" viewBox="0 0 24 24"><path d="m15 10-4 4 6 6 4-16-18 7 4 2 2 6 3-4"/></symbol><symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol><symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol></svg>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div class="read-progress" data-read-progress aria-hidden="true"></div>
+
+  <header class="site-header" data-header>
+    <div class="container">
+      <nav class="nav" aria-label="Main">
+        <a class="brand" href="../index.html"><svg class="icon led-glow" aria-hidden="true" focusable="false"><use href="#i-code"/></svg><span>Ibrohim Sirojiddinov</span></a>
+        <ul class="nav-links">
+          <li><a class="nav-link" href="../about.html">About</a></li>
+          <li><a class="nav-link" href="../services.html">Services</a></li>
+          <li><a class="nav-link" href="../projects.html">Projects</a></li>
+          <li><a class="nav-link" href="../blog.html" aria-current="page">Blog</a></li>
+          <li><a class="nav-link" href="../reviews.html">Reviews</a></li>
+          <li><a class="nav-link" href="../contact.html">Contact</a></li>
+        </ul>
+        <button class="menu-toggle" type="button" data-menu-toggle aria-expanded="false" aria-controls="mobile-menu" aria-label="Open menu"><svg class="icon icon-open" aria-hidden="true" focusable="false"><use href="#i-menu"/></svg><svg class="icon icon-close" aria-hidden="true" focusable="false"><use href="#i-x"/></svg></button>
+      </nav>
+    </div>
+    <nav class="mobile-menu" id="mobile-menu" data-menu aria-label="Mobile">
+      <a href="../about.html"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-user"/></svg>About</a>
+      <a href="../services.html"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-sliders"/></svg>Services</a>
+      <a href="../projects.html"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-folder"/></svg>Projects</a>
+      <a href="../blog.html" aria-current="page"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-book"/></svg>Blog</a>
+      <a href="../reviews.html"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-message"/></svg>Reviews</a>
+      <a href="../contact.html"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-mail"/></svg>Contact</a>
+    </nav>
+  </header>
+
+  <main id="main">
+
+    <div class="page">
+      <section class="page-section">
+        <div class="container">
+          <article class="post-wrap" data-article aria-labelledby="post-title">
+            <nav class="breadcrumbs" aria-label="Breadcrumb">
+              <a href="../index.html">home</a><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-chevron-right"/></svg><a href="../blog.html">blog</a><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-chevron-right"/></svg><span aria-current="page">building-m-system</span>
+            </nav>
+            <header class="post-head">
+              <h1 id="post-title" data-animate>Building M-System: an internal alternative to Notion for our team</h1>
+              <p class="post-info" data-animate style="--delay:.1s"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-calendar"/></svg><time datetime="2026-11-06">Nov 2026</time><span class="sep">|</span><span>5 min read</span><span class="sep">|</span><a class="link-arrow" href="../blog.html#case-study">Case studies</a></p>
+            </header>
+
+            <div class="cover post-hero" style="--c1:rgb(57 211 83 / .28);--c2:rgb(194 122 255 / .22)" aria-hidden="true">
+  <div class="cover-type"><svg class="icon led-glow" aria-hidden="true" focusable="false"><use href="#i-kanban"/></svg><strong>M-System</strong><small>projects · tasks · daily reports</small></div>
+</div>
+
+            <div class="prose">
+<p>M-System is an internal platform I designed and built at Telecom Soft for projects, tasks and daily reports. It started as &ldquo;a lightweight alternative to Notion for our team&rdquo; and became the place where work is planned, tracked and reported. It runs in production, uses role-based access control for every action, includes AI-agentic features, and contributed to an <strong>estimated 20% improvement in team workflow efficiency</strong>.</p>
+<p>This post is a tour of the decisions behind it: what we needed, how the backend is structured and what I would do the same way again.</p>
+<h2>Why build an internal tool at all?</h2>
+<p>General-purpose workspaces are flexible, and that flexibility has a cost. Every team invents its own structure, permissions are coarse, and turning scattered notes into a report means copying data around by hand.</p>
+<p>What we needed was narrower and stricter:</p>
+<ul>
+<li><strong>Projects</strong> with members, and roles that decide what each member can see and do.</li>
+<li><strong>Tasks</strong> with assignees, deadlines and a status that follows a defined workflow.</li>
+<li><strong>Daily reports</strong>, so progress is visible without extra meetings.</li>
+<li><strong>Access rules that match the organization</strong>, enforced by the backend rather than by convention.</li>
+<li>Data that lives in <strong>our own PostgreSQL database</strong>, ready for reporting and integrations.</li>
+</ul>
+<h2>Architecture at a glance</h2>
+<p>The system is deliberately boring in the best sense of the word: a React client, Nginx in front, an Express.js API, PostgreSQL as the source of truth and Redis for caching and short-lived state.</p>
+<div class="code-block"><span class="code-lang">txt</span><pre class="hl" tabindex="0"><code>React client ──▶ Nginx ──▶ Express API ──▶ PostgreSQL (Sequelize)
+                               │    └────▶ Redis (cache, short-lived state)
+                               └─────────▶ AI agent (same permissions as the user)</code></pre></div>
+<p>Inside the API, every feature is an independently structured module with the same layers. A new developer can open any folder and know where to look:</p>
+<div class="code-block"><span class="code-lang">txt</span><pre class="hl" tabindex="0"><code>src/
+  modules/
+    auth/        routes · controller · service · validation
+    projects/    routes · controller · service · model
+    tasks/       routes · controller · service · model
+    reports/     routes · controller · service · model
+  middleware/    authenticate · authorize · validate · errorHandler
+  lib/           db · redis · logger</code></pre></div>
+<p>Routes stay thin, controllers translate HTTP into function calls, services hold the business rules, and models describe data. Nothing in a service knows about <code>req</code> or <code>res</code>, which keeps the rules easy to test and to reuse from background jobs.</p>
+<h2>The data model</h2>
+<p>A simplified version of the core model looks like this. Most of the important rules are visible in the relationships alone:</p>
+<div class="code-block"><span class="code-lang">js</span><pre class="hl" tabindex="0"><code><span class="c1">// models/index.js (simplified)</span>
+<span class="nx">User</span><span class="p">.</span><span class="nx">belongsToMany</span><span class="p">(</span><span class="nx">Role</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">through</span><span class="o">:</span><span class="w"> </span><span class="s1">'user_roles'</span><span class="p">,</span><span class="w"> </span><span class="kr">as</span><span class="o">:</span><span class="w"> </span><span class="s1">'roles'</span><span class="w"> </span><span class="p">});</span>
+<span class="nx">Role</span><span class="p">.</span><span class="nx">belongsToMany</span><span class="p">(</span><span class="nx">Permission</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">through</span><span class="o">:</span><span class="w"> </span><span class="s1">'role_permissions'</span><span class="p">,</span><span class="w"> </span><span class="kr">as</span><span class="o">:</span><span class="w"> </span><span class="s1">'permissions'</span><span class="w"> </span><span class="p">});</span>
+
+<span class="nx">Project</span><span class="p">.</span><span class="nx">belongsToMany</span><span class="p">(</span><span class="nx">User</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">through</span><span class="o">:</span><span class="w"> </span><span class="nx">ProjectMember</span><span class="p">,</span><span class="w"> </span><span class="kr">as</span><span class="o">:</span><span class="w"> </span><span class="s1">'members'</span><span class="w"> </span><span class="p">});</span>
+<span class="nx">Project</span><span class="p">.</span><span class="nx">hasMany</span><span class="p">(</span><span class="nx">Task</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="kr">as</span><span class="o">:</span><span class="w"> </span><span class="s1">'tasks'</span><span class="p">,</span><span class="w"> </span><span class="nx">foreignKey</span><span class="o">:</span><span class="w"> </span><span class="s1">'projectId'</span><span class="w"> </span><span class="p">});</span>
+
+<span class="nx">Task</span><span class="p">.</span><span class="nx">belongsTo</span><span class="p">(</span><span class="nx">User</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="kr">as</span><span class="o">:</span><span class="w"> </span><span class="s1">'assignee'</span><span class="p">,</span><span class="w"> </span><span class="nx">foreignKey</span><span class="o">:</span><span class="w"> </span><span class="s1">'assigneeId'</span><span class="w"> </span><span class="p">});</span>
+<span class="nx">Task</span><span class="p">.</span><span class="nx">hasMany</span><span class="p">(</span><span class="nx">TaskStatusHistory</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="kr">as</span><span class="o">:</span><span class="w"> </span><span class="s1">'history'</span><span class="p">,</span><span class="w"> </span><span class="nx">foreignKey</span><span class="o">:</span><span class="w"> </span><span class="s1">'taskId'</span><span class="w"> </span><span class="p">});</span>
+
+<span class="nx">User</span><span class="p">.</span><span class="nx">hasMany</span><span class="p">(</span><span class="nx">DailyReport</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="kr">as</span><span class="o">:</span><span class="w"> </span><span class="s1">'reports'</span><span class="p">,</span><span class="w"> </span><span class="nx">foreignKey</span><span class="o">:</span><span class="w"> </span><span class="s1">'userId'</span><span class="w"> </span><span class="p">});</span></code></pre></div>
+<p>Two choices paid off early. First, <strong>membership is a real model</strong> (<code>ProjectMember</code>) instead of a plain join table, so it can carry a role inside the project. Second, <strong>status changes are stored as history rows</strong>, not only as the current value, so &ldquo;when did this task move to review?&rdquo; is a query, not a guess.</p>
+<h2>RBAC on every endpoint</h2>
+<p>Permissions are named <code>resource:action</code> (<code>task:update</code>, <code>report:read-all</code>) and checked by one middleware before a controller runs. The rule is <em>deny by default</em>: if a route has no explicit permission, it is not reachable.</p>
+<div class="code-block"><span class="code-lang">js</span><pre class="hl" tabindex="0"><code><span class="nx">router</span><span class="p">.</span><span class="nx">patch</span><span class="p">(</span>
+<span class="w">  </span><span class="s1">'/projects/:projectId/tasks/:taskId'</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">authenticate</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">authorize</span><span class="p">(</span><span class="s1">'task:update'</span><span class="p">),</span>
+<span class="w">  </span><span class="nx">validate</span><span class="p">(</span><span class="nx">updateTaskSchema</span><span class="p">),</span>
+<span class="w">  </span><span class="nx">taskController</span><span class="p">.</span><span class="nx">update</span><span class="p">,</span>
+<span class="p">);</span></code></pre></div>
+<p>The permission tells us <em>what</em> a user may do; the service still checks <em>where</em>, so a member of one project cannot touch another project&rsquo;s tasks by guessing IDs. I wrote about the full approach in <a href="rbac-for-node-apis.html">RBAC for Node.js APIs</a>.</p>
+<h2>Workflows as rules, not conventions</h2>
+<p>A task should not jump from &ldquo;todo&rdquo; straight to &ldquo;done&rdquo; because someone clicked the wrong button. In a simplified form, the allowed transitions live in one place and the service refuses anything else:</p>
+<div class="code-block"><span class="code-lang">js</span><pre class="hl" tabindex="0"><code><span class="kd">const</span><span class="w"> </span><span class="nx">TRANSITIONS</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">todo</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s1">'in_progress'</span><span class="p">],</span>
+<span class="w">  </span><span class="nx">in_progress</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s1">'review'</span><span class="p">,</span><span class="w"> </span><span class="s1">'todo'</span><span class="p">],</span>
+<span class="w">  </span><span class="nx">review</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s1">'done'</span><span class="p">,</span><span class="w"> </span><span class="s1">'in_progress'</span><span class="p">],</span>
+<span class="w">  </span><span class="nx">done</span><span class="o">:</span><span class="w"> </span><span class="p">[],</span>
+<span class="p">};</span>
+
+<span class="k">export</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">assertTransition</span><span class="p">(</span><span class="kr">from</span><span class="p">,</span><span class="w"> </span><span class="nx">to</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="nx">TRANSITIONS</span><span class="p">[</span><span class="kr">from</span><span class="p">]</span><span class="o">?</span><span class="p">.</span><span class="nx">includes</span><span class="p">(</span><span class="nx">to</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">throw</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">ConflictError</span><span class="p">(</span><span class="sb">`A task cannot move from "</span><span class="si">${</span><span class="kr">from</span><span class="si">}</span><span class="sb">" to "</span><span class="si">${</span><span class="nx">to</span><span class="si">}</span><span class="sb">"`</span><span class="p">);</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span></code></pre></div>
+<p>Keeping the workflow explicit made it easy to discuss with the team: the rules are readable by people who never open the code.</p>
+<h2>Let the database enforce simple rules</h2>
+<p>Some rules are simple enough for PostgreSQL to guarantee. &ldquo;One daily report per person per day&rdquo;, for example, is a unique constraint rather than a check that lives only in the UI:</p>
+<div class="code-block"><span class="code-lang">sql</span><pre class="hl" tabindex="0"><code><span class="k">ALTER</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">daily_reports</span>
+<span class="w">  </span><span class="k">ADD</span><span class="w"> </span><span class="k">CONSTRAINT</span><span class="w"> </span><span class="n">daily_reports_one_per_day</span><span class="w"> </span><span class="k">UNIQUE</span><span class="w"> </span><span class="p">(</span><span class="n">user_id</span><span class="p">,</span><span class="w"> </span><span class="n">report_date</span><span class="p">);</span></code></pre></div>
+<p>The API turns a violation into a clear <code>409 Conflict</code>, and the client can offer to edit the existing report instead.</p>
+<h2>AI-agentic capabilities, with guardrails</h2>
+<p>The most interesting part of M-System is its AI-agentic capabilities, which help people work with their own projects and tasks. The guardrails I follow matter more than the model:</p>
+<ul>
+<li>The agent acts <strong>with the permissions of the user</strong> who invoked it, through the same API and the same <code>authorize()</code> checks.</li>
+<li>Every action it takes is <strong>logged</strong>, just like a human action.</li>
+<li>Anything destructive needs a <strong>human confirmation</strong>.</li>
+</ul>
+<p>An agent that can bypass access control is a security incident waiting to happen. An agent that is just another API client is a feature.</p>
+<h2>Shipping it</h2>
+<p>The API runs on Linux behind Nginx, which sits in front as a reverse proxy. Redis takes care of caching and short-lived state, and structured logs make it easy to see what happened when someone reports a problem.</p>
+<h2>What I learned</h2>
+<ol>
+<li><strong>Start from workflows, not screens.</strong> The status transitions and permissions shaped the data model, and the UI followed.</li>
+<li><strong>Put access control in the data model early.</strong> Retrofitting RBAC onto existing endpoints is far harder than designing for it.</li>
+<li><strong>Keep modules independent.</strong> When a module owns its routes, rules and models, changes stay local.</li>
+<li><strong>Write the docs while you build.</strong> The Swagger spec and short design notes made onboarding and frontend work much faster.</li>
+</ol>
+<p>M-System is not the most complex system I have worked on, but it is the one that taught me the most about building software that people use every day.</p>
+            </div>
+
+            <div class="post-tags"><ul class="tags"><li class="tag">Express.js</li><li class="tag">PostgreSQL</li><li class="tag">Case study</li></ul></div>
+
+            <aside class="card author-box" data-animate aria-label="About the author">
+              <img src="../assets/img/ibrohim.jpg" alt="" width="72" height="72" loading="lazy">
+              <div>
+                <h2>Ibrohim Sirojiddinov</h2>
+                <p>Backend Software Engineer (Node.js) at Telecom Soft in Tashkent. I build secure REST APIs, data models and internal platforms, and I write about what I learn along the way.</p>
+                <div class="socials">
+                  <a href="https://www.linkedin.com/in/ibkm-dev" target="_blank" rel="noopener" aria-label="LinkedIn"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-linkedin"/></svg></a>
+                  <a href="https://t.me/bkm100" target="_blank" rel="noopener" aria-label="Telegram"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-telegram"/></svg></a>
+                  <a href="mailto:sironiddinooov@gmail.com" aria-label="Email"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-mail"/></svg></a>
+                </div>
+              </div>
+            </aside>
+
+            <section class="related" aria-labelledby="related-title">
+              <h2 id="related-title"><svg class="icon led-glow" aria-hidden="true" focusable="false"><use href="#i-book"/></svg> Related Articles</h2>
+              <div class="related-list">
+                <a class="card card-hover related-item" href="rbac-for-node-apis.html" data-animate style="--delay:0.0s">
+                  <div class="cover" style="--c1:rgb(57 211 83 / .26);--c2:rgb(81 162 255 / .22)" aria-hidden="true">
+  <div class="cover-type"><svg class="icon led-glow" aria-hidden="true" focusable="false"><use href="#i-shield"/></svg><strong>RBAC</strong><small>authorize(&#39;ticket:update&#39;)</small></div>
+</div>
+                  <div class="related-body">
+                    <h3>RBAC for Node.js APIs: roles, permissions and middleware that scale</h3>
+                    <p>Roles describe people; permissions describe actions. How I model RBAC in PostgreSQL, enforce it with Express…</p>
+                    <p class="post-date"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-calendar"/></svg><span>Nov 2026</span><span class="sep">|</span><span>5 min read</span></p>
+                  </div>
+                </a>
+                <a class="card card-hover related-item" href="otp-2fa-fastify-redis.html" data-animate style="--delay:0.1s">
+                  <div class="cover" style="--c1:rgb(255 100 103 / .22);--c2:rgb(57 211 83 / .22)" aria-hidden="true">
+  <div class="cover-type"><svg class="icon led-glow" aria-hidden="true" focusable="false"><use href="#i-lock"/></svg><strong>2FA</strong><small>SET 2fa:{id} … EX 120</small></div>
+</div>
+                  <div class="related-body">
+                    <h3>OTP two-step verification with Fastify and Redis</h3>
+                    <p>A second factor that is secure and pleasant to use: Redis-backed challenges, OTP expiry, retry and resend limits…</p>
+                    <p class="post-date"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-calendar"/></svg><span>Nov 2026</span><span class="sep">|</span><span>5 min read</span></p>
+                  </div>
+                </a>
+              </div>
+            </section>
+          </article>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="site-footer pattern-code">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-about">
+          <p class="footer-brand"><svg class="icon led-glow" aria-hidden="true" focusable="false"><use href="#i-code"/></svg><span>Ibrohim Sirojiddinov</span></p>
+          <p>Backend Software Engineer (Node.js) in Tashkent. I build secure, well-documented REST APIs and database-driven systems that teams can rely on.</p>
+          <div class="socials">
+            <a href="https://www.linkedin.com/in/ibkm-dev" target="_blank" rel="noopener" aria-label="LinkedIn"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-linkedin"/></svg></a>
+            <a href="https://t.me/bkm100" target="_blank" rel="noopener" aria-label="Telegram"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-telegram"/></svg></a>
+            <a href="mailto:sironiddinooov@gmail.com" aria-label="Email"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-mail"/></svg></a>
+            <a href="tel:+998999206525" aria-label="Phone"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-phone"/></svg></a>
+          </div>
+        </div>
+        <div class="footer-col">
+          <h2><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-link"/></svg> Quick Links</h2>
+          <ul class="footer-links">
+            <li><a href="../about.html"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-user"/></svg> About</a></li>
+            <li><a href="../services.html"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-sliders"/></svg> Services</a></li>
+            <li><a href="../projects.html"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-folder"/></svg> Projects</a></li>
+            <li><a href="../blog.html"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-book"/></svg> Blog</a></li>
+            <li><a href="../reviews.html"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-message"/></svg> Reviews</a></li>
+            <li><a href="../contact.html"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-mail"/></svg> Contact</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h2><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-mail"/></svg> Get in Touch</h2>
+          <ul class="footer-contact">
+            <li><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-mail"/></svg><a href="mailto:sironiddinooov@gmail.com">sironiddinooov@gmail.com</a></li>
+            <li><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-phone"/></svg><a href="tel:+998999206525">+998 (99) 920-65-25</a></li>
+            <li><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-telegram"/></svg><a href="https://t.me/bkm100" target="_blank" rel="noopener">@bkm100</a></li>
+            <li><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-pin"/></svg><span>Tashkent, Uzbekistan</span></li>
+          </ul>
+          <p class="footer-status"><span class="pulse-dot" aria-hidden="true"></span>Open to Node.js backend roles</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; <span data-year>2026</span> Ibrohim Sirojiddinov. Crafted with <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-heart"/></svg><span class="visually-hidden">love</span> and <span class="nowrap"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-coffee"/></svg><span class="visually-hidden">coffee</span>.</span></p>
+        <nav aria-label="Footer">
+          <a href="../privacy.html">Privacy</a>
+          <a href="../assets/Ibrohim-Sirojiddinov-CV.pdf" download>Download CV</a>
+        </nav>
+      </div>
+    </div>
+  </footer>
+
+  <button class="to-top" type="button" data-to-top aria-label="Back to top"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-arrow-up"/></svg></button>
+  <div class="toast" data-toast role="status" aria-live="polite"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-check-circle"/></svg><span data-toast-text></span></div>
+</body>
+</html>

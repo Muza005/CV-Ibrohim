@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Spec-driven API development with OpenAPI and Swagger · Ibrohim Sirojiddinov</title>
+  <meta name="description" content="Writing the contract before the code: how OpenAPI specs, JSON Schema validation and Swagger UI keep backend, frontend and QA in sync, and why the spec doubles as documentation.">
+  <meta name="author" content="Ibrohim Sirojiddinov">
+  <meta name="theme-color" content="#030712">
+  <meta name="color-scheme" content="dark">
+
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Ibrohim Sirojiddinov">
+  <meta property="og:title" content="Spec-driven API development with OpenAPI and Swagger">
+  <meta property="og:description" content="Writing the contract before the code: how OpenAPI specs, JSON Schema validation and Swagger UI keep backend, frontend and QA in sync, and why the spec doubles as documentation.">
+  <meta property="og:url" content="https://ibrohim-sirojiddinov.vercel.app/posts/spec-driven-apis-openapi">
+  <meta property="og:image" content="https://ibrohim-sirojiddinov.vercel.app/assets/img/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Ibrohim Sirojiddinov, Backend Software Engineer (Node.js), Tashkent">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="../assets/img/apple-touch-icon.png">
+  <link rel="preload" href="../assets/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../assets/fonts/fira-code-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <script>document.documentElement.classList.replace('no-js', 'js');</script>
+  <script src="../assets/js/main.js" defer onerror="document.documentElement.classList.replace('js', 'no-js')"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "Spec-driven API development with OpenAPI and Swagger",
+    "description": "Writing the contract before the code: how OpenAPI specs, JSON Schema validation and Swagger UI keep backend, frontend and QA in sync, and why the spec doubles as documentation.",
+    "datePublished": "2026-11-06",
+    "dateModified": "2026-11-06",
+    "author": { "@type": "Person", "name": "Ibrohim Sirojiddinov", "url": "https://ibrohim-sirojiddinov.vercel.app/" },
+    "image": "https://ibrohim-sirojiddinov.vercel.app/assets/img/og-image.png",
+    "mainEntityOfPage": "https://ibrohim-sirojiddinov.vercel.app/posts/spec-driven-apis-openapi",
+    "keywords": "OpenAPI, Swagger, Fastify"
+  }
+  </script>
+</head>
+<body>
+  <svg class="sprite" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg"><symbol id="i-arrow-up" viewBox="0 0 24 24"><path d="M12 19V5"/><path d="m6 11 6-6 6 6"/></symbol><symbol id="i-book" viewBox="0 0 24 24"><path d="M2 5h6a4 4 0 0 1 4 4v11a3 3 0 0 0-3-3H2z"/><path d="M22 5h-6a4 4 0 0 0-4 4v11a3 3 0 0 1 3-3h7z"/></symbol><symbol id="i-bot" viewBox="0 0 24 24"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 4.5V8"/><circle cx="12" cy="3.5" r="1"/><path d="M9 13.5v1M15 13.5v1"/><path d="M2 13v3M22 13v3"/></symbol><symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></symbol><symbol id="i-check-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></symbol><symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></symbol><symbol id="i-code" viewBox="0 0 24 24"><path d="m8 8-4 4 4 4"/><path d="m16 8 4 4-4 4"/><path d="m14 4-4 16"/></symbol><symbol id="i-coffee" viewBox="0 0 24 24"><path d="M4 9h13v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z"/><path d="M17 10.5h1.5a2.5 2.5 0 0 1 0 5H17"/><path d="M8 2.5v3M12 2.5v3"/></symbol><symbol id="i-database" viewBox="0 0 24 24"><ellipse cx="12" cy="5.5" rx="8" ry="3"/><path d="M4 5.5v6.5c0 1.7 3.6 3 8 3s8-1.3 8-3V5.5"/><path d="M4 12v6.5c0 1.7 3.6 3 8 3s8-1.3 8-3V12"/></symbol><symbol id="i-file-code" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="m10 12.5-2 2 2 2"/><path d="m14 12.5 2 2-2 2"/></symbol><symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 6.5a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2V18a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol><symbol id="i-heart" viewBox="0 0 24 24"><path d="M12 20s-7.5-4.6-9.3-9.4A5 5 0 0 1 12 6.2a5 5 0 0 1 9.3 4.4C19.5 15.4 12 20 12 20z"/></symbol><symbol id="i-link" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></symbol><symbol id="i-linkedin" viewBox="0 0 24 24"><path d="M8 11v5"/><path d="M8 8v.01"/><path d="M12 16v-5"/><path d="M16 16v-3a2 2 0 1 0-4 0"/><path d="M3 7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4z"/></symbol><symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></symbol><symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol><symbol id="i-message" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></symbol><symbol id="i-phone" viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></symbol><symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></symbol><symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/></symbol><symbol id="i-telegram" viewBox="0 0 24 24"><path d="m15 10-4 4 6 6 4-16-18 7 4 2 2 6 3-4"/></symbol><symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol><symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol></svg>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div class="read-progress" data-read-progress aria-hidden="true"></div>
+
+  <header class="site-header" data-header>
+    <div class="container">
+      <nav class="nav" aria-label="Main">
+        <a class="brand" href="../index.html"><svg class="icon led-glow" aria-hidden="true" focusable="false"><use href="#i-code"/></svg><span>Ibrohim Sirojiddinov</span></a>
+        <ul class="nav-links">
+          <li><a class="nav-link" href="../about.html">About</a></li>
+          <li><a class="nav-link" href="../services.html">Services</a></li>
+          <li><a class="nav-link" href="../projects.html">Projects</a></li>
+          <li><a class="nav-link" href="../blog.html" aria-current="page">Blog</a></li>
+          <li><a class="nav-link" href="../reviews.html">Reviews</a></li>
+          <li><a class="nav-link" href="../contact.html">Contact</a></li>
+        </ul>
+        <button class="menu-toggle" type="button" data-menu-toggle aria-expanded="false" aria-controls="mobile-menu" aria-label="Open menu"><svg class="icon icon-open" aria-hidden="true" focusable="false"><use href="#i-menu"/></svg><svg class="icon icon-close" aria-hidden="true" focusable="false"><use href="#i-x"/></svg></button>
+      </nav>
+    </div>
+    <nav class="mobile-menu" id="mobile-menu" data-menu aria-label="Mobile">
+      <a href="../about.html"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-user"/></svg>About</a>
+      <a href="../services.html"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-sliders"/></svg>Services</a>
+      <a href="../projects.html"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-folder"/></svg>Projects</a>
+      <a href="../blog.html" aria-current="page"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-book"/></svg>Blog</a>
+      <a href="../reviews.html"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-message"/></svg>Reviews</a>
+      <a href="../contact.html"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-mail"/></svg>Contact</a>
+    </nav>
+  </header>
+
+  <main id="main">
+
+    <div class="page">
+      <section class="page-section">
+        <div class="container">
+          <article class="post-wrap" data-article aria-labelledby="post-title">
+            <nav class="breadcrumbs" aria-label="Breadcrumb">
+              <a href="../index.html">home</a><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-chevron-right"/></svg><a href="../blog.html">blog</a><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-chevron-right"/></svg><span aria-current="page">spec-driven-apis-openapi</span>
+            </nav>
+            <header class="post-head">
+              <h1 id="post-title" data-animate>Spec-driven API development with OpenAPI and Swagger</h1>
+              <p class="post-info" data-animate style="--delay:.1s"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-calendar"/></svg><time datetime="2026-11-06">Nov 2026</time><span class="sep">|</span><span>4 min read</span><span class="sep">|</span><a class="link-arrow" href="../blog.html#api-design">API design</a></p>
+            </header>
+
+            <div class="cover post-hero" style="--c1:rgb(133 234 45 / .22);--c2:rgb(0 211 242 / .18)" aria-hidden="true">
+  <div class="cover-type"><svg class="icon led-glow" aria-hidden="true" focusable="false"><use href="#i-file-code"/></svg><strong>OpenAPI</strong><small>contract first, code second</small></div>
+</div>
+
+            <div class="prose">
+<p>Most API bugs I have seen were not coding mistakes. They were misunderstandings: the frontend expected <code>status</code>, the backend returned <code>state</code>; QA tested a flow nobody had agreed on; an error case simply had no defined response. Spec-driven development attacks that problem at the source. The team agrees on the contract first, and the code is written to satisfy it.</p>
+<p>I use Swagger/OpenAPI for API documentation and apply spec-driven design to capture system requirements and development workflows. Here is what that looks like in practice.</p>
+<h2>What &ldquo;spec-driven&rdquo; means day to day</h2>
+<ol>
+<li><strong>Write down the behaviour</strong> in plain language: who calls the endpoint, what they send, what can go wrong.</li>
+<li><strong>Turn it into an OpenAPI description</strong>: paths, parameters, request bodies, responses and errors.</li>
+<li><strong>Review the spec</strong> with frontend, QA and whoever owns the business process. Changing YAML is cheap; changing a released API is not.</li>
+<li><strong>Implement against the spec</strong>, reusing its schemas for request validation.</li>
+<li><strong>Publish the docs</strong> with Swagger UI, generated from the same source, so they cannot drift away from the code.</li>
+</ol>
+<p>The frontend can start building against the agreed contract on day one, while the backend is still being written.</p>
+<h2>A small contract</h2>
+<p>Here is a trimmed example from a B2B ticketing module: changing the status of a support ticket.</p>
+<div class="code-block"><span class="code-lang">yaml</span><pre class="hl" tabindex="0"><code><span class="nt">openapi</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3.0.3</span>
+<span class="nt">info</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">title</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">B2B Tickets API</span>
+<span class="w">  </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.0.0</span>
+<span class="nt">paths</span><span class="p">:</span>
+<span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">/tickets/{id}/status</span><span class="p p-Indicator">:</span>
+<span class="w">    </span><span class="nt">patch</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">summary</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Change the status of a ticket</span>
+<span class="w">      </span><span class="nt">tags</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">tickets</span><span class="p p-Indicator">]</span>
+<span class="w">      </span><span class="nt">security</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">bearerAuth</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span>
+<span class="w">      </span><span class="nt">parameters</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">id</span>
+<span class="w">          </span><span class="nt">in</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">path</span>
+<span class="w">          </span><span class="nt">required</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">          </span><span class="nt">schema</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt"> type</span><span class="p">:</span><span class="w"> </span><span class="nv">integer</span><span class="w"> </span><span class="p p-Indicator">}</span>
+<span class="w">      </span><span class="nt">requestBody</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">required</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">        </span><span class="nt">content</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">application/json</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">schema</span><span class="p">:</span>
+<span class="w">              </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">object</span>
+<span class="w">              </span><span class="nt">required</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">status</span><span class="p p-Indicator">]</span>
+<span class="w">              </span><span class="nt">additionalProperties</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">              </span><span class="nt">properties</span><span class="p">:</span>
+<span class="w">                </span><span class="nt">status</span><span class="p">:</span>
+<span class="w">                  </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">string</span>
+<span class="w">                  </span><span class="nt">enum</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">open</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">in_review</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">resolved</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">rejected</span><span class="p p-Indicator">]</span>
+<span class="w">                </span><span class="nt">comment</span><span class="p">:</span>
+<span class="w">                  </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">string</span>
+<span class="w">                  </span><span class="nt">maxLength</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1000</span>
+<span class="w">      </span><span class="nt">responses</span><span class="p">:</span>
+<span class="w">        </span><span class="s">'200'</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt"> description</span><span class="p">:</span><span class="w"> </span><span class="nv">Ticket updated</span><span class="w"> </span><span class="p p-Indicator">}</span>
+<span class="w">        </span><span class="s">'403'</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt"> description</span><span class="p">:</span><span class="w"> </span><span class="nv">Not allowed for this role</span><span class="w"> </span><span class="p p-Indicator">}</span>
+<span class="w">        </span><span class="s">'404'</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt"> description</span><span class="p">:</span><span class="w"> </span><span class="nv">Ticket not found in your organization</span><span class="w"> </span><span class="p p-Indicator">}</span>
+<span class="w">        </span><span class="s">'409'</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt"> description</span><span class="p">:</span><span class="w"> </span><span class="nv">Transition not allowed from the current status</span><span class="w"> </span><span class="p p-Indicator">}</span>
+<span class="nt">components</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">securitySchemes</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">bearerAuth</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt"> type</span><span class="p">:</span><span class="w"> </span><span class="nv">http</span><span class="p p-Indicator">,</span><span class="nt"> scheme</span><span class="p">:</span><span class="w"> </span><span class="nv">bearer</span><span class="p p-Indicator">,</span><span class="nt"> bearerFormat</span><span class="p">:</span><span class="w"> </span><span class="nv">JWT</span><span class="w"> </span><span class="p p-Indicator">}</span></code></pre></div>
+<p>Even this small piece answers questions that usually come up only during testing. Which statuses exist? Is a comment required? What happens when the transition is not allowed? The answer is a <code>409</code>, and everyone knows it before a line of code exists.</p>
+<h2>One schema, two jobs: validation and docs</h2>
+<p>Fastify uses JSON Schema for validation and serialization, and <code>@fastify/swagger</code> turns the same route schemas into an OpenAPI document. Describing the route once gives you input validation, faster response serialization and documentation:</p>
+<div class="code-block"><span class="code-lang">js</span><pre class="hl" tabindex="0"><code><span class="k">import</span><span class="w"> </span><span class="nx">Fastify</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">'fastify'</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="nx">swagger</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">'@fastify/swagger'</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="nx">swaggerUi</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">'@fastify/swagger-ui'</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">app</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">Fastify</span><span class="p">({</span><span class="w"> </span><span class="nx">logger</span><span class="o">:</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="p">});</span>
+
+<span class="k">await</span><span class="w"> </span><span class="nx">app</span><span class="p">.</span><span class="nx">register</span><span class="p">(</span><span class="nx">swagger</span><span class="p">,</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">openapi</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">info</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">title</span><span class="o">:</span><span class="w"> </span><span class="s1">'B2B Tickets API'</span><span class="p">,</span><span class="w"> </span><span class="nx">version</span><span class="o">:</span><span class="w"> </span><span class="s1">'1.0.0'</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="nx">components</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nx">securitySchemes</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">bearerAuth</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">type</span><span class="o">:</span><span class="w"> </span><span class="s1">'http'</span><span class="p">,</span><span class="w"> </span><span class="nx">scheme</span><span class="o">:</span><span class="w"> </span><span class="s1">'bearer'</span><span class="p">,</span><span class="w"> </span><span class="nx">bearerFormat</span><span class="o">:</span><span class="w"> </span><span class="s1">'JWT'</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="p">});</span>
+<span class="k">await</span><span class="w"> </span><span class="nx">app</span><span class="p">.</span><span class="nx">register</span><span class="p">(</span><span class="nx">swaggerUi</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">routePrefix</span><span class="o">:</span><span class="w"> </span><span class="s1">'/docs'</span><span class="w"> </span><span class="p">});</span>
+
+<span class="nx">app</span><span class="p">.</span><span class="nx">addSchema</span><span class="p">({</span>
+<span class="w">  </span><span class="nx">$id</span><span class="o">:</span><span class="w"> </span><span class="s1">'Error'</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">type</span><span class="o">:</span><span class="w"> </span><span class="s1">'object'</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">required</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s1">'error'</span><span class="p">,</span><span class="w"> </span><span class="s1">'message'</span><span class="p">],</span>
+<span class="w">  </span><span class="nx">properties</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">error</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">type</span><span class="o">:</span><span class="w"> </span><span class="s1">'string'</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="nx">message</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">type</span><span class="o">:</span><span class="w"> </span><span class="s1">'string'</span><span class="w"> </span><span class="p">},</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="p">});</span>
+
+<span class="nx">app</span><span class="p">.</span><span class="nx">patch</span><span class="p">(</span><span class="s1">'/tickets/:id/status'</span><span class="p">,</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">schema</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">tags</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s1">'tickets'</span><span class="p">],</span>
+<span class="w">    </span><span class="nx">summary</span><span class="o">:</span><span class="w"> </span><span class="s1">'Change the status of a ticket'</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">security</span><span class="o">:</span><span class="w"> </span><span class="p">[{</span><span class="w"> </span><span class="nx">bearerAuth</span><span class="o">:</span><span class="w"> </span><span class="p">[]</span><span class="w"> </span><span class="p">}],</span>
+<span class="w">    </span><span class="nx">params</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nx">type</span><span class="o">:</span><span class="w"> </span><span class="s1">'object'</span><span class="p">,</span>
+<span class="w">      </span><span class="nx">required</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s1">'id'</span><span class="p">],</span>
+<span class="w">      </span><span class="nx">properties</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">id</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">type</span><span class="o">:</span><span class="w"> </span><span class="s1">'integer'</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nx">body</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nx">type</span><span class="o">:</span><span class="w"> </span><span class="s1">'object'</span><span class="p">,</span>
+<span class="w">      </span><span class="nx">required</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s1">'status'</span><span class="p">],</span>
+<span class="w">      </span><span class="nx">additionalProperties</span><span class="o">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">      </span><span class="nx">properties</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nx">status</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">type</span><span class="o">:</span><span class="w"> </span><span class="s1">'string'</span><span class="p">,</span><span class="w"> </span><span class="kr">enum</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s1">'open'</span><span class="p">,</span><span class="w"> </span><span class="s1">'in_review'</span><span class="p">,</span><span class="w"> </span><span class="s1">'resolved'</span><span class="p">,</span><span class="w"> </span><span class="s1">'rejected'</span><span class="p">]</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="nx">comment</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">type</span><span class="o">:</span><span class="w"> </span><span class="s1">'string'</span><span class="p">,</span><span class="w"> </span><span class="nx">maxLength</span><span class="o">:</span><span class="w"> </span><span class="mf">1000</span><span class="w"> </span><span class="p">},</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nx">response</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="mf">200</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nx">type</span><span class="o">:</span><span class="w"> </span><span class="s1">'object'</span><span class="p">,</span>
+<span class="w">        </span><span class="nx">properties</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">id</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">type</span><span class="o">:</span><span class="w"> </span><span class="s1">'integer'</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="nx">status</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">type</span><span class="o">:</span><span class="w"> </span><span class="s1">'string'</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">},</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">      </span><span class="mf">409</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">$ref</span><span class="o">:</span><span class="w"> </span><span class="s1">'Error#'</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="nx">preHandler</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="nx">authenticate</span><span class="p">,</span><span class="w"> </span><span class="nx">authorize</span><span class="p">(</span><span class="s1">'ticket:update'</span><span class="p">)],</span>
+<span class="p">},</span><span class="w"> </span><span class="nx">changeStatusHandler</span><span class="p">);</span></code></pre></div>
+<p>A request with an unknown status never reaches the handler; Fastify rejects it with a <code>400</code> and a precise message. The response schema also acts as a safety net, because properties that are not in it are not serialized, so an internal field cannot leak by accident.</p>
+<h2>Agree on errors, not just on success</h2>
+<p>The happy path is the easy part of a contract. I define one error shape for the whole API and document every error status per endpoint:</p>
+<div class="code-block"><span class="code-lang">json</span><pre class="hl" tabindex="0"><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">"error"</span><span class="p">:</span><span class="w"> </span><span class="s2">"INVALID_TRANSITION"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"A ticket cannot move from \"resolved\" to \"in_review\""</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"details"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"from"</span><span class="p">:</span><span class="w"> </span><span class="s2">"resolved"</span><span class="p">,</span><span class="w"> </span><span class="nt">"to"</span><span class="p">:</span><span class="w"> </span><span class="s2">"in_review"</span><span class="w"> </span><span class="p">}</span>
+<span class="p">}</span></code></pre></div>
+<p><code>error</code> is a stable, machine-readable code that the frontend can switch on. <code>message</code> is for humans and can change. <code>details</code> is optional context. With this shape, clients need one error handler, not twenty.</p>
+<h2>Keeping the spec honest</h2>
+<p>A spec that drifts away from the code is worse than no spec at all. These habits keep it accurate:</p>
+<ul>
+<li><strong>Generate the docs from the code</strong> (route schemas) or validate the code against the spec. Never maintain both by hand.</li>
+<li><strong>Review spec changes like code changes.</strong> A pull request that changes a response shape should show it in the diff.</li>
+<li><strong>Version breaking changes</strong> (<code>/v1</code>, <code>/v2</code>) and add fields instead of renaming them.</li>
+<li><strong>Document examples</strong> for both success and errors. Examples are what developers copy first.</li>
+</ul>
+<h2>Why it is worth it</h2>
+<p>Spec-driven development feels slower for the first hour and much faster for the rest of the project. Frontend and backend work in parallel, QA writes test cases from the contract, and onboarding a new developer starts with reading <code>/docs</code> instead of reverse-engineering controllers. As a bonus, a precise spec is excellent context for AI coding assistants, which I wrote about in <a href="ai-agents-backend-workflow.html">How I use AI agents in my backend workflow</a>.</p>
+            </div>
+
+            <div class="post-tags"><ul class="tags"><li class="tag">OpenAPI</li><li class="tag">Swagger</li><li class="tag">Fastify</li></ul></div>
+
+            <aside class="card author-box" data-animate aria-label="About the author">
+              <img src="../assets/img/ibrohim.jpg" alt="" width="72" height="72" loading="lazy">
+              <div>
+                <h2>Ibrohim Sirojiddinov</h2>
+                <p>Backend Software Engineer (Node.js) at Telecom Soft in Tashkent. I build secure REST APIs, data models and internal platforms, and I write about what I learn along the way.</p>
+                <div class="socials">
+                  <a href="https://www.linkedin.com/in/ibkm-dev" target="_blank" rel="noopener" aria-label="LinkedIn"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-linkedin"/></svg></a>
+                  <a href="https://t.me/bkm100" target="_blank" rel="noopener" aria-label="Telegram"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-telegram"/></svg></a>
+                  <a href="mailto:sironiddinooov@gmail.com" aria-label="Email"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-mail"/></svg></a>
+                </div>
+              </div>
+            </aside>
+
+            <section class="related" aria-labelledby="related-title">
+              <h2 id="related-title"><svg class="icon led-glow" aria-hidden="true" focusable="false"><use href="#i-book"/></svg> Related Articles</h2>
+              <div class="related-list">
+                <a class="card card-hover related-item" href="status-history-audit-logs-postgres.html" data-animate style="--delay:0.0s">
+                  <div class="cover" style="--c1:rgb(81 162 255 / .26);--c2:rgb(57 211 83 / .18)" aria-hidden="true">
+  <div class="cover-type"><svg class="icon led-glow" aria-hidden="true" focusable="false"><use href="#i-database"/></svg><strong>SQL</strong><small>ticket_status_history</small></div>
+</div>
+                  <div class="related-body">
+                    <h3>Status history and audit logs with PostgreSQL and Sequelize</h3>
+                    <p>Modelling a ticket workflow that can always answer “who changed what, and when”: append-only history tables, audit…</p>
+                    <p class="post-date"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-calendar"/></svg><span>Nov 2026</span><span class="sep">|</span><span>5 min read</span></p>
+                  </div>
+                </a>
+                <a class="card card-hover related-item" href="ai-agents-backend-workflow.html" data-animate style="--delay:0.1s">
+                  <div class="cover" style="--c1:rgb(194 122 255 / .3);--c2:rgb(0 211 242 / .18)" aria-hidden="true">
+  <div class="cover-type"><svg class="icon led-glow" aria-hidden="true" focusable="false"><use href="#i-bot"/></svg><strong>AI agents</strong><small>humans decide · agents assist</small></div>
+</div>
+                  <div class="related-body">
+                    <h3>How I use AI agents in my backend workflow</h3>
+                    <p>Where AI agents genuinely help a backend developer (research, specs, tests, docs and refactors) and the guardrails I…</p>
+                    <p class="post-date"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-calendar"/></svg><span>Nov 2026</span><span class="sep">|</span><span>4 min read</span></p>
+                  </div>
+                </a>
+              </div>
+            </section>
+          </article>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="site-footer pattern-code">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-about">
+          <p class="footer-brand"><svg class="icon led-glow" aria-hidden="true" focusable="false"><use href="#i-code"/></svg><span>Ibrohim Sirojiddinov</span></p>
+          <p>Backend Software Engineer (Node.js) in Tashkent. I build secure, well-documented REST APIs and database-driven systems that teams can rely on.</p>
+          <div class="socials">
+            <a href="https://www.linkedin.com/in/ibkm-dev" target="_blank" rel="noopener" aria-label="LinkedIn"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-linkedin"/></svg></a>
+            <a href="https://t.me/bkm100" target="_blank" rel="noopener" aria-label="Telegram"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-telegram"/></svg></a>
+            <a href="mailto:sironiddinooov@gmail.com" aria-label="Email"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-mail"/></svg></a>
+            <a href="tel:+998999206525" aria-label="Phone"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-phone"/></svg></a>
+          </div>
+        </div>
+        <div class="footer-col">
+          <h2><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-link"/></svg> Quick Links</h2>
+          <ul class="footer-links">
+            <li><a href="../about.html"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-user"/></svg> About</a></li>
+            <li><a href="../services.html"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-sliders"/></svg> Services</a></li>
+            <li><a href="../projects.html"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-folder"/></svg> Projects</a></li>
+            <li><a href="../blog.html"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-book"/></svg> Blog</a></li>
+            <li><a href="../reviews.html"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-message"/></svg> Reviews</a></li>
+            <li><a href="../contact.html"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-mail"/></svg> Contact</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h2><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-mail"/></svg> Get in Touch</h2>
+          <ul class="footer-contact">
+            <li><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-mail"/></svg><a href="mailto:sironiddinooov@gmail.com">sironiddinooov@gmail.com</a></li>
+            <li><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-phone"/></svg><a href="tel:+998999206525">+998 (99) 920-65-25</a></li>
+            <li><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-telegram"/></svg><a href="https://t.me/bkm100" target="_blank" rel="noopener">@bkm100</a></li>
+            <li><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-pin"/></svg><span>Tashkent, Uzbekistan</span></li>
+          </ul>
+          <p class="footer-status"><span class="pulse-dot" aria-hidden="true"></span>Open to Node.js backend roles</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; <span data-year>2026</span> Ibrohim Sirojiddinov. Crafted with <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-heart"/></svg><span class="visually-hidden">love</span> and <span class="nowrap"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-coffee"/></svg><span class="visually-hidden">coffee</span>.</span></p>
+        <nav aria-label="Footer">
+          <a href="../privacy.html">Privacy</a>
+          <a href="../assets/Ibrohim-Sirojiddinov-CV.pdf" download>Download CV</a>
+        </nav>
+      </div>
+    </div>
+  </footer>
+
+  <button class="to-top" type="button" data-to-top aria-label="Back to top"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-arrow-up"/></svg></button>
+  <div class="toast" data-toast role="status" aria-live="polite"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-check-circle"/></svg><span data-toast-text></span></div>
+</body>
+</html>

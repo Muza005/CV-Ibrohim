@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Status history and audit logs with PostgreSQL and Sequelize · Ibrohim Sirojiddinov</title>
+  <meta name="description" content="Modelling a ticket workflow that can always answer “who changed what, and when”: append-only history tables, audit logs, allowed status transitions and transactions with row locks.">
+  <meta name="author" content="Ibrohim Sirojiddinov">
+  <meta name="theme-color" content="#030712">
+  <meta name="color-scheme" content="dark">
+
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Ibrohim Sirojiddinov">
+  <meta property="og:title" content="Status history and audit logs with PostgreSQL and Sequelize">
+  <meta property="og:description" content="Modelling a ticket workflow that can always answer “who changed what, and when”: append-only history tables, audit logs, allowed status transitions and transactions with row locks.">
+  <meta property="og:url" content="https://ibrohim-sirojiddinov.vercel.app/posts/status-history-audit-logs-postgres">
+  <meta property="og:image" content="https://ibrohim-sirojiddinov.vercel.app/assets/img/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Ibrohim Sirojiddinov, Backend Software Engineer (Node.js), Tashkent">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="../assets/img/apple-touch-icon.png">
+  <link rel="preload" href="../assets/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../assets/fonts/fira-code-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <script>document.documentElement.classList.replace('no-js', 'js');</script>
+  <script src="../assets/js/main.js" defer onerror="document.documentElement.classList.replace('js', 'no-js')"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "Status history and audit logs with PostgreSQL and Sequelize",
+    "description": "Modelling a ticket workflow that can always answer \u201cwho changed what, and when\u201d: append-only history tables, audit logs, allowed status transitions and transactions with row locks.",
+    "datePublished": "2026-11-06",
+    "dateModified": "2026-11-06",
+    "author": { "@type": "Person", "name": "Ibrohim Sirojiddinov", "url": "https://ibrohim-sirojiddinov.vercel.app/" },
+    "image": "https://ibrohim-sirojiddinov.vercel.app/assets/img/og-image.png",
+    "mainEntityOfPage": "https://ibrohim-sirojiddinov.vercel.app/posts/status-history-audit-logs-postgres",
+    "keywords": "PostgreSQL, Sequelize, Data modeling"
+  }
+  </script>
+</head>
+<body>
+  <svg class="sprite" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg"><symbol id="i-arrow-up" viewBox="0 0 24 24"><path d="M12 19V5"/><path d="m6 11 6-6 6 6"/></symbol><symbol id="i-book" viewBox="0 0 24 24"><path d="M2 5h6a4 4 0 0 1 4 4v11a3 3 0 0 0-3-3H2z"/><path d="M22 5h-6a4 4 0 0 0-4 4v11a3 3 0 0 1 3-3h7z"/></symbol><symbol id="i-bot" viewBox="0 0 24 24"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 4.5V8"/><circle cx="12" cy="3.5" r="1"/><path d="M9 13.5v1M15 13.5v1"/><path d="M2 13v3M22 13v3"/></symbol><symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></symbol><symbol id="i-check-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></symbol><symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></symbol><symbol id="i-code" viewBox="0 0 24 24"><path d="m8 8-4 4 4 4"/><path d="m16 8 4 4-4 4"/><path d="m14 4-4 16"/></symbol><symbol id="i-coffee" viewBox="0 0 24 24"><path d="M4 9h13v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z"/><path d="M17 10.5h1.5a2.5 2.5 0 0 1 0 5H17"/><path d="M8 2.5v3M12 2.5v3"/></symbol><symbol id="i-database" viewBox="0 0 24 24"><ellipse cx="12" cy="5.5" rx="8" ry="3"/><path d="M4 5.5v6.5c0 1.7 3.6 3 8 3s8-1.3 8-3V5.5"/><path d="M4 12v6.5c0 1.7 3.6 3 8 3s8-1.3 8-3V12"/></symbol><symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 6.5a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2V18a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol><symbol id="i-heart" viewBox="0 0 24 24"><path d="M12 20s-7.5-4.6-9.3-9.4A5 5 0 0 1 12 6.2a5 5 0 0 1 9.3 4.4C19.5 15.4 12 20 12 20z"/></symbol><symbol id="i-kanban" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 7v7M12 7v3M16 7v9"/></symbol><symbol id="i-link" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></symbol><symbol id="i-linkedin" viewBox="0 0 24 24"><path d="M8 11v5"/><path d="M8 8v.01"/><path d="M12 16v-5"/><path d="M16 16v-3a2 2 0 1 0-4 0"/><path d="M3 7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4z"/></symbol><symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></symbol><symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol><symbol id="i-message" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></symbol><symbol id="i-phone" viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></symbol><symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></symbol><symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/></symbol><symbol id="i-telegram" viewBox="0 0 24 24"><path d="m15 10-4 4 6 6 4-16-18 7 4 2 2 6 3-4"/></symbol><symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol><symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol></svg>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div class="read-progress" data-read-progress aria-hidden="true"></div>
+
+  <header class="site-header" data-header>
+    <div class="container">
+      <nav class="nav" aria-label="Main">
+        <a class="brand" href="../index.html"><svg class="icon led-glow" aria-hidden="true" focusable="false"><use href="#i-code"/></svg><span>Ibrohim Sirojiddinov</span></a>
+        <ul class="nav-links">
+          <li><a class="nav-link" href="../about.html">About</a></li>
+          <li><a class="nav-link" href="../services.html">Services</a></li>
+          <li><a class="nav-link" href="../projects.html">Projects</a></li>
+          <li><a class="nav-link" href="../blog.html" aria-current="page">Blog</a></li>
+          <li><a class="nav-link" href="../reviews.html">Reviews</a></li>
+          <li><a class="nav-link" href="../contact.html">Contact</a></li>
+        </ul>
+        <button class="menu-toggle" type="button" data-menu-toggle aria-expanded="false" aria-controls="mobile-menu" aria-label="Open menu"><svg class="icon icon-open" aria-hidden="true" focusable="false"><use href="#i-menu"/></svg><svg class="icon icon-close" aria-hidden="true" focusable="false"><use href="#i-x"/></svg></button>
+      </nav>
+    </div>
+    <nav class="mobile-menu" id="mobile-menu" data-menu aria-label="Mobile">
+      <a href="../about.html"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-user"/></svg>About</a>
+      <a href="../services.html"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-sliders"/></svg>Services</a>
+      <a href="../projects.html"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-folder"/></svg>Projects</a>
+      <a href="../blog.html" aria-current="page"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-book"/></svg>Blog</a>
+      <a href="../reviews.html"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-message"/></svg>Reviews</a>
+      <a href="../contact.html"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-mail"/></svg>Contact</a>
+    </nav>
+  </header>
+
+  <main id="main">
+
+    <div class="page">
+      <section class="page-section">
+        <div class="container">
+          <article class="post-wrap" data-article aria-labelledby="post-title">
+            <nav class="breadcrumbs" aria-label="Breadcrumb">
+              <a href="../index.html">home</a><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-chevron-right"/></svg><a href="../blog.html">blog</a><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-chevron-right"/></svg><span aria-current="page">status-history-audit-logs-postgres</span>
+            </nav>
+            <header class="post-head">
+              <h1 id="post-title" data-animate>Status history and audit logs with PostgreSQL and Sequelize</h1>
+              <p class="post-info" data-animate style="--delay:.1s"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-calendar"/></svg><time datetime="2026-11-06">Nov 2026</time><span class="sep">|</span><span>5 min read</span><span class="sep">|</span><a class="link-arrow" href="../blog.html#databases">Databases</a></p>
+            </header>
+
+            <div class="cover post-hero" style="--c1:rgb(81 162 255 / .26);--c2:rgb(57 211 83 / .18)" aria-hidden="true">
+  <div class="cover-type"><svg class="icon led-glow" aria-hidden="true" focusable="false"><use href="#i-database"/></svg><strong>SQL</strong><small>ticket_status_history</small></div>
+</div>
+
+            <div class="prose">
+<p>In a B2B support system, the question that matters most is rarely &ldquo;what is the status of this ticket?&rdquo;. It is &ldquo;<strong>who</strong> changed it, <strong>when</strong>, and <strong>why</strong>?&rdquo;. A client wants to know why their appeal was rejected; a manager wants to know how long tickets sit in review; an auditor wants proof. When I built a modular backend for B2B complaints, appeals and support tickets, status history and audit logging were first-class parts of the data model, not afterthoughts.</p>
+<p>Here is the design I use, shown with PostgreSQL and Sequelize.</p>
+<h2>Three tables, three jobs</h2>
+<ul>
+<li><strong><code>tickets</code></strong> holds the <em>current</em> state, fast to read and easy to filter.</li>
+<li><strong><code>ticket_status_history</code></strong> is an <em>append-only</em> timeline of status changes for each ticket.</li>
+<li><strong><code>audit_logs</code></strong> is a <em>generic</em>, append-only record of significant actions across the whole system.</li>
+</ul>
+<div class="code-block"><span class="code-lang">sql</span><pre class="hl" tabindex="0"><code><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">tickets</span><span class="w"> </span><span class="p">(</span>
+<span class="w">  </span><span class="n">id</span><span class="w">              </span><span class="nb">BIGSERIAL</span><span class="w"> </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="p">,</span>
+<span class="w">  </span><span class="n">organization_id</span><span class="w"> </span><span class="nb">BIGINT</span><span class="w">       </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">REFERENCES</span><span class="w"> </span><span class="n">organizations</span><span class="p">(</span><span class="n">id</span><span class="p">),</span>
+<span class="w">  </span><span class="n">subject</span><span class="w">         </span><span class="nb">VARCHAR</span><span class="p">(</span><span class="mf">200</span><span class="p">)</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">  </span><span class="n">status</span><span class="w">          </span><span class="nb">VARCHAR</span><span class="p">(</span><span class="mf">32</span><span class="p">)</span><span class="w">  </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="s1">'open'</span><span class="p">,</span>
+<span class="w">  </span><span class="n">created_at</span><span class="w">      </span><span class="nb">TIMESTAMPTZ</span><span class="w">  </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="n">now</span><span class="p">(),</span>
+<span class="w">  </span><span class="n">updated_at</span><span class="w">      </span><span class="nb">TIMESTAMPTZ</span><span class="w">  </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="n">now</span><span class="p">()</span>
+<span class="p">);</span>
+
+<span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">ticket_status_history</span><span class="w"> </span><span class="p">(</span>
+<span class="w">  </span><span class="n">id</span><span class="w">            </span><span class="nb">BIGSERIAL</span><span class="w"> </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="p">,</span>
+<span class="w">  </span><span class="n">ticket_id</span><span class="w">     </span><span class="nb">BIGINT</span><span class="w">      </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">REFERENCES</span><span class="w"> </span><span class="n">tickets</span><span class="p">(</span><span class="n">id</span><span class="p">)</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="k">DELETE</span><span class="w"> </span><span class="k">CASCADE</span><span class="p">,</span>
+<span class="w">  </span><span class="n">from_status</span><span class="w">   </span><span class="nb">VARCHAR</span><span class="p">(</span><span class="mf">32</span><span class="p">),</span><span class="w">               </span><span class="c1">-- NULL for the first entry</span>
+<span class="w">  </span><span class="n">to_status</span><span class="w">     </span><span class="nb">VARCHAR</span><span class="p">(</span><span class="mf">32</span><span class="p">)</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">  </span><span class="n">changed_by_id</span><span class="w"> </span><span class="nb">BIGINT</span><span class="w">      </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">REFERENCES</span><span class="w"> </span><span class="n">users</span><span class="p">(</span><span class="n">id</span><span class="p">),</span>
+<span class="w">  </span><span class="k">comment</span><span class="w">       </span><span class="nb">TEXT</span><span class="p">,</span>
+<span class="w">  </span><span class="n">created_at</span><span class="w">    </span><span class="nb">TIMESTAMPTZ</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="n">now</span><span class="p">()</span>
+<span class="p">);</span>
+
+<span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">audit_logs</span><span class="w"> </span><span class="p">(</span>
+<span class="w">  </span><span class="n">id</span><span class="w">          </span><span class="nb">BIGSERIAL</span><span class="w"> </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="p">,</span>
+<span class="w">  </span><span class="n">actor_id</span><span class="w">    </span><span class="nb">BIGINT</span><span class="w"> </span><span class="k">REFERENCES</span><span class="w"> </span><span class="n">users</span><span class="p">(</span><span class="n">id</span><span class="p">),</span>
+<span class="w">  </span><span class="k">action</span><span class="w">      </span><span class="nb">VARCHAR</span><span class="p">(</span><span class="mf">64</span><span class="p">)</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span><span class="w">        </span><span class="c1">-- e.g. 'ticket.status_changed'</span>
+<span class="w">  </span><span class="n">entity_type</span><span class="w"> </span><span class="nb">VARCHAR</span><span class="p">(</span><span class="mf">32</span><span class="p">)</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">  </span><span class="n">entity_id</span><span class="w">   </span><span class="nb">BIGINT</span><span class="w">      </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">  </span><span class="n">metadata</span><span class="w">    </span><span class="nb">JSONB</span><span class="w">       </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="s1">'{}'</span><span class="p">,</span>
+<span class="w">  </span><span class="n">created_at</span><span class="w">  </span><span class="nb">TIMESTAMPTZ</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="n">now</span><span class="p">()</span>
+<span class="p">);</span></code></pre></div>
+<p>Why not just one table? Because they answer different questions. The history table is optimized for &ldquo;show me this ticket&rsquo;s timeline&rdquo;. The audit log is optimized for &ldquo;show me everything this user did last week&rdquo; or &ldquo;everything that happened to entity X&rdquo;, across many entity types.</p>
+<h2>The Sequelize side</h2>
+<div class="code-block"><span class="code-lang">js</span><pre class="hl" tabindex="0"><code><span class="kd">const</span><span class="w"> </span><span class="nx">TicketStatusHistory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">sequelize</span><span class="p">.</span><span class="nx">define</span><span class="p">(</span><span class="s1">'TicketStatusHistory'</span><span class="p">,</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">fromStatus</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">type</span><span class="o">:</span><span class="w"> </span><span class="nx">DataTypes</span><span class="p">.</span><span class="nx">STRING</span><span class="p">(</span><span class="mf">32</span><span class="p">),</span><span class="w"> </span><span class="nx">allowNull</span><span class="o">:</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="p">},</span>
+<span class="w">  </span><span class="nx">toStatus</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">type</span><span class="o">:</span><span class="w"> </span><span class="nx">DataTypes</span><span class="p">.</span><span class="nx">STRING</span><span class="p">(</span><span class="mf">32</span><span class="p">),</span><span class="w"> </span><span class="nx">allowNull</span><span class="o">:</span><span class="w"> </span><span class="kc">false</span><span class="w"> </span><span class="p">},</span>
+<span class="w">  </span><span class="nx">comment</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">type</span><span class="o">:</span><span class="w"> </span><span class="nx">DataTypes</span><span class="p">.</span><span class="nx">TEXT</span><span class="w"> </span><span class="p">},</span>
+<span class="p">},</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">tableName</span><span class="o">:</span><span class="w"> </span><span class="s1">'ticket_status_history'</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">underscored</span><span class="o">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">updatedAt</span><span class="o">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">          </span><span class="c1">// history rows are never updated</span>
+<span class="p">});</span>
+
+<span class="nx">Ticket</span><span class="p">.</span><span class="nx">hasMany</span><span class="p">(</span><span class="nx">TicketStatusHistory</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="kr">as</span><span class="o">:</span><span class="w"> </span><span class="s1">'history'</span><span class="p">,</span><span class="w"> </span><span class="nx">foreignKey</span><span class="o">:</span><span class="w"> </span><span class="s1">'ticketId'</span><span class="w"> </span><span class="p">});</span>
+<span class="nx">TicketStatusHistory</span><span class="p">.</span><span class="nx">belongsTo</span><span class="p">(</span><span class="nx">User</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="kr">as</span><span class="o">:</span><span class="w"> </span><span class="s1">'changedBy'</span><span class="p">,</span><span class="w"> </span><span class="nx">foreignKey</span><span class="o">:</span><span class="w"> </span><span class="s1">'changedById'</span><span class="w"> </span><span class="p">});</span></code></pre></div>
+<p><code>updatedAt: false</code> is a small but honest signal: these rows are facts about the past, and nobody should be editing them.</p>
+<h2>Changing a status: rules, a transaction and a lock</h2>
+<p>Allowed transitions are explicit. Every status change writes three things, and they must succeed or fail <strong>together</strong>, so they share one transaction:</p>
+<div class="code-block"><span class="code-lang">js</span><pre class="hl" tabindex="0"><code><span class="kd">const</span><span class="w"> </span><span class="nx">TRANSITIONS</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">open</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s1">'in_review'</span><span class="p">,</span><span class="w"> </span><span class="s1">'rejected'</span><span class="p">],</span>
+<span class="w">  </span><span class="nx">in_review</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s1">'resolved'</span><span class="p">,</span><span class="w"> </span><span class="s1">'rejected'</span><span class="p">,</span><span class="w"> </span><span class="s1">'open'</span><span class="p">],</span>
+<span class="w">  </span><span class="nx">rejected</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s1">'open'</span><span class="p">],</span>
+<span class="w">  </span><span class="nx">resolved</span><span class="o">:</span><span class="w"> </span><span class="p">[],</span>
+<span class="p">};</span>
+
+<span class="k">export</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">changeStatus</span><span class="p">({</span><span class="w"> </span><span class="nx">ticketId</span><span class="p">,</span><span class="w"> </span><span class="nx">toStatus</span><span class="p">,</span><span class="w"> </span><span class="nx">comment</span><span class="p">,</span><span class="w"> </span><span class="nx">actor</span><span class="w"> </span><span class="p">})</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="nx">sequelize</span><span class="p">.</span><span class="nx">transaction</span><span class="p">(</span><span class="k">async</span><span class="w"> </span><span class="p">(</span><span class="nx">t</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// Lock the row so two agents can't change the same ticket at the same time</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">ticket</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">Ticket</span><span class="p">.</span><span class="nx">findOne</span><span class="p">({</span>
+<span class="w">      </span><span class="nx">where</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">id</span><span class="o">:</span><span class="w"> </span><span class="nx">ticketId</span><span class="p">,</span><span class="w"> </span><span class="nx">organizationId</span><span class="o">:</span><span class="w"> </span><span class="nx">actor</span><span class="p">.</span><span class="nx">organizationId</span><span class="w"> </span><span class="p">},</span>
+<span class="w">      </span><span class="nx">lock</span><span class="o">:</span><span class="w"> </span><span class="nx">t</span><span class="p">.</span><span class="nx">LOCK</span><span class="p">.</span><span class="nx">UPDATE</span><span class="p">,</span>
+<span class="w">      </span><span class="nx">transaction</span><span class="o">:</span><span class="w"> </span><span class="nx">t</span><span class="p">,</span>
+<span class="w">    </span><span class="p">});</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="nx">ticket</span><span class="p">)</span><span class="w"> </span><span class="k">throw</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">NotFoundError</span><span class="p">(</span><span class="s1">'Ticket not found'</span><span class="p">);</span>
+
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">fromStatus</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">ticket</span><span class="p">.</span><span class="nx">status</span><span class="p">;</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="nx">TRANSITIONS</span><span class="p">[</span><span class="nx">fromStatus</span><span class="p">]</span><span class="o">?</span><span class="p">.</span><span class="nx">includes</span><span class="p">(</span><span class="nx">toStatus</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="k">throw</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">ConflictError</span><span class="p">(</span><span class="sb">`A ticket cannot move from "</span><span class="si">${</span><span class="nx">fromStatus</span><span class="si">}</span><span class="sb">" to "</span><span class="si">${</span><span class="nx">toStatus</span><span class="si">}</span><span class="sb">"`</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">await</span><span class="w"> </span><span class="nx">ticket</span><span class="p">.</span><span class="nx">update</span><span class="p">({</span><span class="w"> </span><span class="nx">status</span><span class="o">:</span><span class="w"> </span><span class="nx">toStatus</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">transaction</span><span class="o">:</span><span class="w"> </span><span class="nx">t</span><span class="w"> </span><span class="p">});</span>
+
+<span class="w">    </span><span class="k">await</span><span class="w"> </span><span class="nx">TicketStatusHistory</span><span class="p">.</span><span class="nx">create</span><span class="p">(</span>
+<span class="w">      </span><span class="p">{</span><span class="w"> </span><span class="nx">ticketId</span><span class="p">,</span><span class="w"> </span><span class="nx">fromStatus</span><span class="p">,</span><span class="w"> </span><span class="nx">toStatus</span><span class="p">,</span><span class="w"> </span><span class="nx">comment</span><span class="p">,</span><span class="w"> </span><span class="nx">changedById</span><span class="o">:</span><span class="w"> </span><span class="nx">actor</span><span class="p">.</span><span class="nx">id</span><span class="w"> </span><span class="p">},</span>
+<span class="w">      </span><span class="p">{</span><span class="w"> </span><span class="nx">transaction</span><span class="o">:</span><span class="w"> </span><span class="nx">t</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">await</span><span class="w"> </span><span class="nx">AuditLog</span><span class="p">.</span><span class="nx">create</span><span class="p">({</span>
+<span class="w">      </span><span class="nx">actorId</span><span class="o">:</span><span class="w"> </span><span class="nx">actor</span><span class="p">.</span><span class="nx">id</span><span class="p">,</span>
+<span class="w">      </span><span class="nx">action</span><span class="o">:</span><span class="w"> </span><span class="s1">'ticket.status_changed'</span><span class="p">,</span>
+<span class="w">      </span><span class="nx">entityType</span><span class="o">:</span><span class="w"> </span><span class="s1">'ticket'</span><span class="p">,</span>
+<span class="w">      </span><span class="nx">entityId</span><span class="o">:</span><span class="w"> </span><span class="nx">ticketId</span><span class="p">,</span>
+<span class="w">      </span><span class="nx">metadata</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">fromStatus</span><span class="p">,</span><span class="w"> </span><span class="nx">toStatus</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">transaction</span><span class="o">:</span><span class="w"> </span><span class="nx">t</span><span class="w"> </span><span class="p">});</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="nx">ticket</span><span class="p">;</span>
+<span class="w">  </span><span class="p">});</span>
+<span class="p">}</span></code></pre></div>
+<p>Three details carry most of the weight here:</p>
+<ul>
+<li><strong><code>SELECT … FOR UPDATE</code></strong> (<code>lock: t.LOCK.UPDATE</code>) prevents two concurrent requests from both reading <code>open</code> and both writing a transition.</li>
+<li><strong>The organization filter</strong> in the query makes the change impossible for users outside the ticket&rsquo;s organization; they get a <code>404</code>.</li>
+<li><strong>One transaction</strong> means there is never a status without its history row, or a history row without its audit entry.</li>
+</ul>
+<h2>Reading the timeline</h2>
+<p>With the association in place, the timeline is a single query:</p>
+<div class="code-block"><span class="code-lang">js</span><pre class="hl" tabindex="0"><code><span class="kd">const</span><span class="w"> </span><span class="nx">timeline</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">TicketStatusHistory</span><span class="p">.</span><span class="nx">findAll</span><span class="p">({</span>
+<span class="w">  </span><span class="nx">where</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">ticketId</span><span class="w"> </span><span class="p">},</span>
+<span class="w">  </span><span class="nx">order</span><span class="o">:</span><span class="w"> </span><span class="p">[[</span><span class="s1">'createdAt'</span><span class="p">,</span><span class="w"> </span><span class="s1">'ASC'</span><span class="p">]],</span>
+<span class="w">  </span><span class="nx">include</span><span class="o">:</span><span class="w"> </span><span class="p">[{</span><span class="w"> </span><span class="nx">association</span><span class="o">:</span><span class="w"> </span><span class="s1">'changedBy'</span><span class="p">,</span><span class="w"> </span><span class="nx">attributes</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s1">'id'</span><span class="p">,</span><span class="w"> </span><span class="s1">'fullName'</span><span class="p">]</span><span class="w"> </span><span class="p">}],</span>
+<span class="p">});</span></code></pre></div>
+<p>The same data powers simple analytics. For example, here is the average time from the first <code>in_review</code> to <code>resolved</code>:</p>
+<div class="code-block"><span class="code-lang">sql</span><pre class="hl" tabindex="0"><code><span class="k">SELECT</span><span class="w"> </span><span class="n">avg</span><span class="p">(</span><span class="n">t</span><span class="mf">.</span><span class="n">resolved_at</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t</span><span class="mf">.</span><span class="n">review_at</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">avg_review_time</span>
+<span class="k">FROM</span><span class="w"> </span><span class="p">(</span>
+<span class="w">  </span><span class="k">SELECT</span><span class="w"> </span><span class="n">ticket_id</span><span class="p">,</span>
+<span class="w">         </span><span class="n">min</span><span class="p">(</span><span class="n">created_at</span><span class="p">)</span><span class="w"> </span><span class="k">FILTER</span><span class="w"> </span><span class="p">(</span><span class="k">WHERE</span><span class="w"> </span><span class="n">to_status</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'in_review'</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">review_at</span><span class="p">,</span>
+<span class="w">         </span><span class="n">max</span><span class="p">(</span><span class="n">created_at</span><span class="p">)</span><span class="w"> </span><span class="k">FILTER</span><span class="w"> </span><span class="p">(</span><span class="k">WHERE</span><span class="w"> </span><span class="n">to_status</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'resolved'</span><span class="p">)</span><span class="w">  </span><span class="k">AS</span><span class="w"> </span><span class="n">resolved_at</span>
+<span class="w">  </span><span class="k">FROM</span><span class="w"> </span><span class="n">ticket_status_history</span>
+<span class="w">  </span><span class="k">GROUP</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">ticket_id</span>
+<span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">t</span>
+<span class="k">WHERE</span><span class="w"> </span><span class="n">t</span><span class="mf">.</span><span class="n">review_at</span><span class="w"> </span><span class="k">IS</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span>
+<span class="w">  </span><span class="k">AND</span><span class="w"> </span><span class="n">t</span><span class="mf">.</span><span class="n">resolved_at</span><span class="w"> </span><span class="k">IS</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">;</span></code></pre></div>
+<h2>Indexes that match the questions</h2>
+<div class="code-block"><span class="code-lang">sql</span><pre class="hl" tabindex="0"><code><span class="k">CREATE</span><span class="w"> </span><span class="k">INDEX</span><span class="w"> </span><span class="n">idx_tsh_ticket_created</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">ticket_status_history</span><span class="w"> </span><span class="p">(</span><span class="n">ticket_id</span><span class="p">,</span><span class="w"> </span><span class="n">created_at</span><span class="p">);</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">INDEX</span><span class="w"> </span><span class="n">idx_audit_entity</span><span class="w">      </span><span class="k">ON</span><span class="w"> </span><span class="n">audit_logs</span><span class="w"> </span><span class="p">(</span><span class="n">entity_type</span><span class="p">,</span><span class="w"> </span><span class="n">entity_id</span><span class="p">,</span><span class="w"> </span><span class="n">created_at</span><span class="w"> </span><span class="k">DESC</span><span class="p">);</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">INDEX</span><span class="w"> </span><span class="n">idx_audit_actor</span><span class="w">       </span><span class="k">ON</span><span class="w"> </span><span class="n">audit_logs</span><span class="w"> </span><span class="p">(</span><span class="n">actor_id</span><span class="p">,</span><span class="w"> </span><span class="n">created_at</span><span class="w"> </span><span class="k">DESC</span><span class="p">);</span></code></pre></div>
+<p>Each index matches a real screen or report: the ticket timeline, the history of one entity and the activity of one user.</p>
+<h2>Why not database triggers?</h2>
+<p>Triggers can record every change automatically, which is tempting. Their weakness is <strong>context</strong>: a trigger sees the row, but not the user, the reason or the request that caused the change. Recording history in the service layer keeps the actor and the comment in the same transaction. When you need a safety net for changes made outside the application, a trigger-based audit can sit alongside it.</p>
+<h2>Rules of thumb</h2>
+<ol>
+<li><strong>Append-only.</strong> History and audit rows are inserted, never updated or deleted by the application.</li>
+<li><strong>Store the actor and the reason</strong>, not only the new value.</li>
+<li><strong>Keep metadata in JSONB</strong> so new event types don&rsquo;t require migrations.</li>
+<li><strong>Write history in the same transaction</strong> as the change it describes.</li>
+<li><strong>Plan retention early.</strong> Audit tables grow forever unless you decide otherwise.</li>
+</ol>
+<p>The payoff is a system that can always explain itself, and that is worth far more to a support team than a few saved inserts.</p>
+            </div>
+
+            <div class="post-tags"><ul class="tags"><li class="tag">PostgreSQL</li><li class="tag">Sequelize</li><li class="tag">Data modeling</li></ul></div>
+
+            <aside class="card author-box" data-animate aria-label="About the author">
+              <img src="../assets/img/ibrohim.jpg" alt="" width="72" height="72" loading="lazy">
+              <div>
+                <h2>Ibrohim Sirojiddinov</h2>
+                <p>Backend Software Engineer (Node.js) at Telecom Soft in Tashkent. I build secure REST APIs, data models and internal platforms, and I write about what I learn along the way.</p>
+                <div class="socials">
+                  <a href="https://www.linkedin.com/in/ibkm-dev" target="_blank" rel="noopener" aria-label="LinkedIn"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-linkedin"/></svg></a>
+                  <a href="https://t.me/bkm100" target="_blank" rel="noopener" aria-label="Telegram"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-telegram"/></svg></a>
+                  <a href="mailto:sironiddinooov@gmail.com" aria-label="Email"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-mail"/></svg></a>
+                </div>
+              </div>
+            </aside>
+
+            <section class="related" aria-labelledby="related-title">
+              <h2 id="related-title"><svg class="icon led-glow" aria-hidden="true" focusable="false"><use href="#i-book"/></svg> Related Articles</h2>
+              <div class="related-list">
+                <a class="card card-hover related-item" href="ai-agents-backend-workflow.html" data-animate style="--delay:0.0s">
+                  <div class="cover" style="--c1:rgb(194 122 255 / .3);--c2:rgb(0 211 242 / .18)" aria-hidden="true">
+  <div class="cover-type"><svg class="icon led-glow" aria-hidden="true" focusable="false"><use href="#i-bot"/></svg><strong>AI agents</strong><small>humans decide · agents assist</small></div>
+</div>
+                  <div class="related-body">
+                    <h3>How I use AI agents in my backend workflow</h3>
+                    <p>Where AI agents genuinely help a backend developer (research, specs, tests, docs and refactors) and the guardrails I…</p>
+                    <p class="post-date"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-calendar"/></svg><span>Nov 2026</span><span class="sep">|</span><span>4 min read</span></p>
+                  </div>
+                </a>
+                <a class="card card-hover related-item" href="building-m-system.html" data-animate style="--delay:0.1s">
+                  <div class="cover" style="--c1:rgb(57 211 83 / .28);--c2:rgb(194 122 255 / .22)" aria-hidden="true">
+  <div class="cover-type"><svg class="icon led-glow" aria-hidden="true" focusable="false"><use href="#i-kanban"/></svg><strong>M-System</strong><small>projects · tasks · daily reports</small></div>
+</div>
+                  <div class="related-body">
+                    <h3>Building M-System: an internal alternative to Notion for our team</h3>
+                    <p>How I designed and shipped an internal platform for projects, tasks and daily reports: RBAC, structured workflows…</p>
+                    <p class="post-date"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-calendar"/></svg><span>Nov 2026</span><span class="sep">|</span><span>5 min read</span></p>
+                  </div>
+                </a>
+              </div>
+            </section>
+          </article>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="site-footer pattern-code">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-about">
+          <p class="footer-brand"><svg class="icon led-glow" aria-hidden="true" focusable="false"><use href="#i-code"/></svg><span>Ibrohim Sirojiddinov</span></p>
+          <p>Backend Software Engineer (Node.js) in Tashkent. I build secure, well-documented REST APIs and database-driven systems that teams can rely on.</p>
+          <div class="socials">
+            <a href="https://www.linkedin.com/in/ibkm-dev" target="_blank" rel="noopener" aria-label="LinkedIn"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-linkedin"/></svg></a>
+            <a href="https://t.me/bkm100" target="_blank" rel="noopener" aria-label="Telegram"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-telegram"/></svg></a>
+            <a href="mailto:sironiddinooov@gmail.com" aria-label="Email"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-mail"/></svg></a>
+            <a href="tel:+998999206525" aria-label="Phone"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-phone"/></svg></a>
+          </div>
+        </div>
+        <div class="footer-col">
+          <h2><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-link"/></svg> Quick Links</h2>
+          <ul class="footer-links">
+            <li><a href="../about.html"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-user"/></svg> About</a></li>
+            <li><a href="../services.html"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-sliders"/></svg> Services</a></li>
+            <li><a href="../projects.html"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-folder"/></svg> Projects</a></li>
+            <li><a href="../blog.html"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-book"/></svg> Blog</a></li>
+            <li><a href="../reviews.html"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-message"/></svg> Reviews</a></li>
+            <li><a href="../contact.html"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-mail"/></svg> Contact</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h2><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-mail"/></svg> Get in Touch</h2>
+          <ul class="footer-contact">
+            <li><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-mail"/></svg><a href="mailto:sironiddinooov@gmail.com">sironiddinooov@gmail.com</a></li>
+            <li><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-phone"/></svg><a href="tel:+998999206525">+998 (99) 920-65-25</a></li>
+            <li><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-telegram"/></svg><a href="https://t.me/bkm100" target="_blank" rel="noopener">@bkm100</a></li>
+            <li><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-pin"/></svg><span>Tashkent, Uzbekistan</span></li>
+          </ul>
+          <p class="footer-status"><span class="pulse-dot" aria-hidden="true"></span>Open to Node.js backend roles</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; <span data-year>2026</span> Ibrohim Sirojiddinov. Crafted with <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-heart"/></svg><span class="visually-hidden">love</span> and <span class="nowrap"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-coffee"/></svg><span class="visually-hidden">coffee</span>.</span></p>
+        <nav aria-label="Footer">
+          <a href="../privacy.html">Privacy</a>
+          <a href="../assets/Ibrohim-Sirojiddinov-CV.pdf" download>Download CV</a>
+        </nav>
+      </div>
+    </div>
+  </footer>
+
+  <button class="to-top" type="button" data-to-top aria-label="Back to top"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-arrow-up"/></svg></button>
+  <div class="toast" data-toast role="status" aria-live="polite"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-check-circle"/></svg><span data-toast-text></span></div>
+</body>
+</html>

@@ -1,5 +1,5 @@
 /* =========================================================
-   Ibrohim Sirojiddinov — CV website interactions
+   Ibrohim Sirojiddinov — portfolio interactions
    Vanilla JS, no dependencies. Every feature is optional:
    if one fails, the rest of the page keeps working.
    ========================================================= */
@@ -10,110 +10,88 @@
   const $ = (sel, ctx = document) => ctx.querySelector(sel);
   const $$ = (sel, ctx = document) => Array.from(ctx.querySelectorAll(sel));
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
   const canObserve = 'IntersectionObserver' in window;
 
   const safe = (name, fn) => {
-    try { fn(); } catch (err) { console.warn(`[cv] ${name} disabled:`, err); }
+    try { fn(); } catch (err) { console.warn(`[site] ${name} disabled:`, err); }
   };
 
-  /* ---------- Theme ---------- */
-  safe('theme', () => {
-    const toggle = $('[data-theme-toggle]');
-    const metas = $$('meta[name="theme-color"]');
-    let animTimer;
+  /* Run `fn(el)` once when `el` scrolls into view (immediately without IntersectionObserver). */
+  const onVisible = (elements, fn, options = { threshold: 0.35 }) => {
+    if (!elements.length) return;
+    if (!canObserve) { elements.forEach(fn); return; }
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        observer.unobserve(entry.target);
+        fn(entry.target);
+      });
+    }, options);
+    elements.forEach((el) => observer.observe(el));
+  };
 
-    const stored = () => {
-      try { return localStorage.getItem('theme'); } catch { return null; }
-    };
+  /* ---------- Toast ---------- */
+  let toastTimer;
+  const toast = (message) => {
+    const box = $('[data-toast]');
+    if (!box) return;
+    $('[data-toast-text]', box).textContent = message;
+    box.classList.add('is-visible');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => box.classList.remove('is-visible'), 2400);
+  };
 
-    const apply = (theme, { persist = false, animate = false } = {}) => {
-      if (animate) {
-        root.classList.add('theme-anim');
-        clearTimeout(animTimer);
-        animTimer = setTimeout(() => root.classList.remove('theme-anim'), 500);
-      }
-      root.setAttribute('data-theme', theme);
-      if (persist) {
-        try { localStorage.setItem('theme', theme); } catch { /* storage unavailable */ }
-      }
-      const bg = getComputedStyle(root).getPropertyValue('--bg').trim();
-      metas.forEach((meta) => meta.setAttribute('content', bg));
-      toggle?.setAttribute('aria-label', theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme');
-      window.dispatchEvent(new Event('themechange'));
-    };
+  const copyText = async (text) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      const area = document.createElement('textarea');
+      area.value = text;
+      area.setAttribute('readonly', '');
+      area.style.position = 'fixed';
+      area.style.opacity = '0';
+      document.body.appendChild(area);
+      area.select();
+      let ok = false;
+      try { ok = document.execCommand('copy'); } catch { ok = false; }
+      area.remove();
+      return ok;
+    }
+  };
 
-    apply(root.getAttribute('data-theme') === 'light' ? 'light' : 'dark');
-
-    toggle?.addEventListener('click', () => {
-      const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-      apply(next, { persist: true, animate: true });
-    });
-
-    window.matchMedia('(prefers-color-scheme: light)').addEventListener?.('change', (e) => {
-      if (!stored()) apply(e.matches ? 'light' : 'dark', { animate: true });
-    });
+  /* ---------- Footer year ---------- */
+  safe('year', () => {
+    $$('[data-year]').forEach((el) => { el.textContent = String(new Date().getFullYear()); });
   });
 
-  /* ---------- Header state, progress bar, back-to-top, scrollspy ---------- */
+  /* ---------- Header shadow + back-to-top + reading progress ---------- */
   safe('scroll', () => {
     const header = $('[data-header]');
-    const bar = $('.progress-bar');
     const toTop = $('[data-to-top]');
-    const links = $$('.nav-link');
-    const indicator = $('.nav-indicator');
-    const sections = links.map((a) => document.getElementById(a.hash.slice(1))).filter(Boolean);
-    let activeId = null;
+    const progress = $('[data-read-progress]');
+    const article = $('[data-article]');
     let ticking = false;
-
-    const moveIndicator = () => {
-      if (!indicator) return;
-      const active = links.find((a) => a.classList.contains('is-active'));
-      if (!active || active.offsetParent === null) {
-        indicator.classList.remove('is-visible');
-        return;
-      }
-      indicator.style.setProperty('--x', `${active.offsetLeft}px`);
-      indicator.style.setProperty('--w', `${active.offsetWidth}px`);
-      indicator.classList.add('is-visible');
-    };
-
-    const setActive = (id) => {
-      if (id === activeId) return;
-      activeId = id;
-      links.forEach((a) => {
-        const on = a.hash === `#${id}`;
-        a.classList.toggle('is-active', on);
-        if (on) a.setAttribute('aria-current', 'location');
-        else a.removeAttribute('aria-current');
-      });
-      moveIndicator();
-    };
 
     const update = () => {
       ticking = false;
       const y = window.scrollY;
-      const max = document.documentElement.scrollHeight - window.innerHeight;
-      if (bar) bar.style.transform = `scaleX(${max > 0 ? Math.min(1, y / max) : 0})`;
-      header?.classList.toggle('is-scrolled', y > 8);
-      toTop?.classList.toggle('is-visible', y > window.innerHeight * 0.9);
-
-      let current = null;
-      const probe = window.innerHeight * 0.38;
-      sections.forEach((s) => { if (s.getBoundingClientRect().top <= probe) current = s; });
-      if (sections.length && max - y < 2) current = sections[sections.length - 1];
-      setActive(current ? current.id : null);
+      header?.classList.toggle('is-scrolled', y > 10);
+      toTop?.classList.toggle('is-visible', y > 300);
+      if (progress && article) {
+        const rect = article.getBoundingClientRect();
+        const total = rect.height - window.innerHeight;
+        const done = total > 0 ? Math.min(1, Math.max(0, -rect.top / total)) : 1;
+        progress.style.transform = `scaleX(${done})`;
+      }
     };
 
-    const request = () => {
+    window.addEventListener('scroll', () => {
       if (ticking) return;
       ticking = true;
       requestAnimationFrame(update);
-    };
-
-    window.addEventListener('scroll', request, { passive: true });
-    window.addEventListener('resize', () => { request(); moveIndicator(); });
-    document.fonts?.ready.then(moveIndicator);
+    }, { passive: true });
+    window.addEventListener('resize', update);
     update();
 
     toTop?.addEventListener('click', () => {
@@ -126,450 +104,362 @@
     const toggle = $('[data-menu-toggle]');
     const menu = $('[data-menu]');
     if (!toggle || !menu) return;
-    const background = [$('main'), $('footer')].filter(Boolean);
-    const isOpen = () => root.classList.contains('menu-open');
 
-    const setMenu = (open, { restoreFocus = false } = {}) => {
-      root.classList.toggle('menu-open', open);
+    const isOpen = () => toggle.getAttribute('aria-expanded') === 'true';
+    const setOpen = (open, { focusToggle = false } = {}) => {
       toggle.setAttribute('aria-expanded', String(open));
       toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+      menu.classList.toggle('is-open', open);
       menu.inert = !open;
-      background.forEach((el) => { el.inert = open; });
-      if (open) menu.querySelector('a')?.focus({ preventScroll: true });
-      else if (restoreFocus) toggle.focus({ preventScroll: true });
+      if (focusToggle) toggle.focus();
     };
 
-    toggle.addEventListener('click', () => setMenu(!isOpen()));
-    menu.addEventListener('click', (e) => { if (e.target.closest('a')) setMenu(false); });
+    setOpen(false);
+    toggle.addEventListener('click', () => setOpen(!isOpen()));
+    menu.addEventListener('click', (e) => { if (e.target.closest('a')) setOpen(false); });
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && isOpen()) setMenu(false, { restoreFocus: true });
+      if (e.key === 'Escape' && isOpen()) setOpen(false, { focusToggle: true });
     });
-    window.matchMedia('(min-width: 921px)').addEventListener?.('change', (e) => {
-      if (e.matches && isOpen()) setMenu(false);
+    document.addEventListener('click', (e) => {
+      if (isOpen() && !e.target.closest('[data-menu]') && !e.target.closest('[data-menu-toggle]')) setOpen(false);
+    });
+    window.matchMedia('(min-width: 1024px)').addEventListener?.('change', (e) => {
+      if (e.matches) setOpen(false);
     });
   });
 
   /* ---------- Reveal on scroll ---------- */
   safe('reveal', () => {
-    $$('[data-stagger]').forEach((group) => {
-      $$(':scope > .reveal, :scope > * > .reveal', group).forEach((el, i) => {
-        el.style.setProperty('--d', `${i * 90}ms`);
-      });
-    });
-
-    const items = $$('.reveal');
+    const items = $$('[data-animate]');
     if (reduceMotion || !canObserve) {
       items.forEach((el) => el.classList.add('is-visible'));
       return;
     }
-
-    root.classList.add('js-ready');
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (!entry.isIntersecting) return;
-        entry.target.classList.add('is-visible');
-        observer.unobserve(entry.target);
-      });
-    }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
-    items.forEach((el) => observer.observe(el));
+    onVisible(items, (el) => el.classList.add('is-visible'), { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
   });
 
-  /* ---------- Animated counters ---------- */
-  safe('counters', () => {
-    const counters = $$('[data-count]');
-    if (reduceMotion || !canObserve || !counters.length) return;
+  /* ---------- Hero: typed terminal values ---------- */
+  safe('typing', () => {
+    const fields = $$('[data-type]');
+    if (!fields.length) return;
+    const texts = fields.map((el) => el.getAttribute('data-type') || '');
+    if (reduceMotion) {
+      fields.forEach((el, i) => { el.textContent = texts[i]; });
+      return;
+    }
+    fields.forEach((el) => { el.textContent = ''; });
 
-    const format = (el, value) => `${el.dataset.prefix || ''}${value}${el.dataset.suffix || ''}`;
-    const run = (el) => {
-      const target = Number(el.dataset.count);
-      const start = performance.now();
-      const duration = 1500;
-      const frame = (now) => {
-        const t = Math.min(1, (now - start) / duration);
-        const eased = 1 - Math.pow(1 - t, 3);
-        el.textContent = format(el, Math.round(target * eased));
-        if (t < 1) requestAnimationFrame(frame);
+    let index = 0;
+    const typeNext = () => {
+      if (index >= fields.length) return;
+      const el = fields[index];
+      const text = texts[index];
+      let n = 0;
+      el.classList.add('is-typing');
+      const tick = () => {
+        n += 1;
+        el.textContent = text.slice(0, n);
+        if (n < text.length) {
+          setTimeout(tick, 28 + Math.random() * 34);
+          return;
+        }
+        el.classList.remove('is-typing');
+        index += 1;
+        setTimeout(typeNext, 140);
       };
-      requestAnimationFrame(frame);
+      tick();
     };
 
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (!entry.isIntersecting) return;
-        run(entry.target);
-        observer.unobserve(entry.target);
-      });
-    }, { threshold: 0.6 });
-
-    counters.forEach((el) => {
-      el.textContent = format(el, 0);
-      observer.observe(el);
-    });
+    onVisible([fields[0].closest('[data-typing-root]') || fields[0]], () => setTimeout(typeNext, 500), { threshold: 0.2 });
   });
 
-  /* ---------- Rotating "I build …" phrases ---------- */
-  safe('typed', () => {
-    const el = $('[data-typed]');
+  /* ---------- Hero: rotating role ---------- */
+  safe('rotator', () => {
+    const el = $('[data-rotate]');
     if (!el || reduceMotion) return;
     let words = [];
-    try { words = JSON.parse(el.dataset.typed); } catch { words = []; }
+    try { words = JSON.parse(el.getAttribute('data-rotate')); } catch { words = []; }
     if (words.length < 2) return;
 
     let index = 0;
     let chars = words[0].length;
     let deleting = true;
-
     const tick = () => {
       const word = words[index];
       if (deleting) {
         chars -= 1;
         el.textContent = word.slice(0, chars);
-        if (chars > 0) return setTimeout(tick, 32);
+        if (chars > 0) return setTimeout(tick, 30);
         deleting = false;
         index = (index + 1) % words.length;
-        return setTimeout(tick, 380);
+        return setTimeout(tick, 320);
       }
       chars += 1;
-      el.textContent = word.slice(0, chars);
-      if (chars < word.length) return setTimeout(tick, 60 + Math.random() * 50);
+      el.textContent = words[index].slice(0, chars);
+      if (chars < words[index].length) return setTimeout(tick, 55 + Math.random() * 45);
       deleting = true;
-      return setTimeout(tick, 2200);
+      return setTimeout(tick, 2300);
     };
-
-    setTimeout(tick, 3200);
+    setTimeout(tick, 2600);
   });
 
-  /* ---------- Terminal typing ---------- */
-  safe('terminal', () => {
-    const terminal = $('[data-terminal]');
-    if (!terminal || reduceMotion || !canObserve) return;
-    const lines = $$('.t-line', terminal);
-    const cmd = $('.t-cmd', terminal);
-    if (!cmd || lines.length < 2) return;
+  /* ---------- Home: live API log ---------- */
+  safe('log', () => {
+    const box = $('[data-log]');
+    if (!box) return;
+    const list = $('.log-lines', box);
+    const source = $('template[data-log-source]', box);
+    if (!list || !source) return;
 
-    const fullCmd = cmd.textContent;
-    const caret = document.createElement('span');
-    caret.className = 't-caret';
-    cmd.textContent = '';
-    cmd.after(caret);
-    terminal.classList.add('is-animating');
-    lines[0].classList.add('is-shown');
+    const pool = $$('.log-line', source.content);
+    if (!pool.length || reduceMotion) return;
 
-    const revealLine = (k) => {
-      if (k >= lines.length) {
-        terminal.classList.remove('is-animating');
-        return;
+    const maxLines = 11;
+    let cursor = 0;
+    let timer = 0;
+    let visible = false;
+
+    const stamp = () => {
+      const d = new Date();
+      const p = (v, n = 2) => String(v).padStart(n, '0');
+      return `${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}.${p(d.getMilliseconds(), 3)}`;
+    };
+
+    const push = () => {
+      const line = pool[cursor % pool.length].cloneNode(true);
+      cursor += 1;
+      const time = $('.lt', line);
+      if (time) {
+        const [hms, ms] = stamp().split('.');
+        time.innerHTML = '';
+        time.append(`[${hms}`);
+        const msEl = document.createElement('span');
+        msEl.className = 'lt-ms';
+        msEl.textContent = `.${ms}`;
+        time.append(msEl, ']');
       }
-      lines[k].classList.add('is-shown');
-      setTimeout(() => revealLine(k + 1), k < 4 ? 150 : 70);
+      line.classList.add('is-new');
+      list.appendChild(line);
+      while (list.children.length > maxLines) list.firstElementChild.remove();
     };
 
-    let typedChars = 0;
-    const typeCmd = () => {
-      typedChars += 1;
-      cmd.textContent = fullCmd.slice(0, typedChars);
-      if (typedChars < fullCmd.length) {
-        setTimeout(typeCmd, 38 + Math.random() * 48);
-        return;
-      }
-      setTimeout(() => {
-        caret.remove();
-        revealLine(1);
-      }, 420);
+    const schedule = () => {
+      clearTimeout(timer);
+      if (!visible || document.hidden) return;
+      timer = setTimeout(() => { push(); schedule(); }, 1300 + Math.random() * 1300);
     };
-
-    const observer = new IntersectionObserver((entries) => {
-      if (!entries.some((e) => e.isIntersecting)) return;
-      observer.disconnect();
-      setTimeout(typeCmd, 900);
-    }, { threshold: 0.35 });
-    observer.observe(terminal);
-  });
-
-  /* ---------- Hero network background ---------- */
-  safe('network', () => {
-    const canvas = $('[data-network]');
-    const hero = canvas?.closest('.hero');
-    const ctx = canvas?.getContext?.('2d');
-    if (!canvas || !hero || !ctx) return;
-
-    let width = 0;
-    let height = 0;
-    let nodes = [];
-    let packets = [];
-    let rafId = 0;
-    let running = false;
-    let inView = true;
-    const pointer = { x: 0, y: 0, active: false };
-
-    const readPalette = () => {
-      const cs = getComputedStyle(root);
-      return {
-        rgb: cs.getPropertyValue('--net-rgb').trim() || '52, 211, 153',
-        packet: cs.getPropertyValue('--net-packet').trim() || '#67e8f9',
-        line: parseFloat(cs.getPropertyValue('--net-line-alpha')) || 0.16,
-        node: parseFloat(cs.getPropertyValue('--net-node-alpha')) || 0.55,
-      };
-    };
-    let palette = readPalette();
-
-    const makeNode = () => {
-      const angle = Math.random() * Math.PI * 2;
-      const speed = 0.12 + Math.random() * 0.22;
-      return {
-        x: Math.random() * width,
-        y: Math.random() * height,
-        vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed,
-        r: 1 + Math.random() * 1.5,
-      };
-    };
-
-    const spawnPacket = (maxDist2) => {
-      for (let tries = 0; tries < 12; tries += 1) {
-        const a = nodes[(Math.random() * nodes.length) | 0];
-        const b = nodes[(Math.random() * nodes.length) | 0];
-        if (a === b) continue;
-        const dx = a.x - b.x;
-        const dy = a.y - b.y;
-        if (dx * dx + dy * dy < maxDist2 * 0.7) {
-          packets.push({ a, b, t: 0, speed: 0.008 + Math.random() * 0.012 });
-          return;
-        }
-      }
-    };
-
-    const draw = (animate) => {
-      ctx.clearRect(0, 0, width, height);
-      const linkDist = Math.max(96, Math.min(150, width / 9));
-      const linkDist2 = linkDist * linkDist;
-      const reach2 = (linkDist * 1.3) ** 2;
-      const { rgb, line, node } = palette;
-
-      if (animate) {
-        nodes.forEach((n) => {
-          n.x += n.vx;
-          n.y += n.vy;
-          if (n.x < 0 || n.x > width) { n.vx *= -1; n.x = Math.max(0, Math.min(width, n.x)); }
-          if (n.y < 0 || n.y > height) { n.vy *= -1; n.y = Math.max(0, Math.min(height, n.y)); }
-        });
-      }
-
-      ctx.lineWidth = 1;
-      for (let i = 0; i < nodes.length; i += 1) {
-        const a = nodes[i];
-        for (let j = i + 1; j < nodes.length; j += 1) {
-          const b = nodes[j];
-          const dx = a.x - b.x;
-          const dy = a.y - b.y;
-          const d2 = dx * dx + dy * dy;
-          if (d2 > linkDist2) continue;
-          ctx.strokeStyle = `rgba(${rgb}, ${((1 - d2 / linkDist2) * line).toFixed(3)})`;
-          ctx.beginPath();
-          ctx.moveTo(a.x, a.y);
-          ctx.lineTo(b.x, b.y);
-          ctx.stroke();
-        }
-        if (pointer.active) {
-          const dx = a.x - pointer.x;
-          const dy = a.y - pointer.y;
-          const d2 = dx * dx + dy * dy;
-          if (d2 < reach2) {
-            ctx.strokeStyle = `rgba(${rgb}, ${((1 - d2 / reach2) * line * 2.6).toFixed(3)})`;
-            ctx.beginPath();
-            ctx.moveTo(a.x, a.y);
-            ctx.lineTo(pointer.x, pointer.y);
-            ctx.stroke();
-          }
-        }
-      }
-
-      ctx.fillStyle = `rgba(${rgb}, ${node})`;
-      nodes.forEach((n) => {
-        ctx.beginPath();
-        ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
-        ctx.fill();
-      });
-
-      if (!animate) return;
-      if (packets.length < 5 && Math.random() < 0.05) spawnPacket(linkDist2);
-      ctx.fillStyle = palette.packet;
-      ctx.shadowColor = palette.packet;
-      ctx.shadowBlur = 10;
-      packets = packets.filter((p) => {
-        p.t += p.speed;
-        const dx = p.a.x - p.b.x;
-        const dy = p.a.y - p.b.y;
-        if (p.t >= 1 || dx * dx + dy * dy > linkDist2) return false;
-        ctx.beginPath();
-        ctx.arc(p.a.x + (p.b.x - p.a.x) * p.t, p.a.y + (p.b.y - p.a.y) * p.t, 2, 0, Math.PI * 2);
-        ctx.fill();
-        return true;
-      });
-      ctx.shadowBlur = 0;
-    };
-
-    const loop = () => {
-      draw(true);
-      rafId = requestAnimationFrame(loop);
-    };
-    const start = () => {
-      if (running || reduceMotion) return;
-      running = true;
-      rafId = requestAnimationFrame(loop);
-    };
-    const stop = () => {
-      running = false;
-      cancelAnimationFrame(rafId);
-    };
-    const sync = () => (inView && !document.hidden ? start() : stop());
-
-    const resize = () => {
-      const rect = canvas.getBoundingClientRect();
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      width = rect.width;
-      height = rect.height;
-      canvas.width = Math.round(width * dpr);
-      canvas.height = Math.round(height * dpr);
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      const target = Math.round(Math.min(86, Math.max(24, (width * height) / 16000)));
-      while (nodes.length < target) nodes.push(makeNode());
-      nodes.length = target;
-      nodes.forEach((n) => {
-        n.x = Math.min(n.x, width);
-        n.y = Math.min(n.y, height);
-      });
-      packets = [];
-      if (!running) draw(false);
-    };
-
-    resize();
-    if ('ResizeObserver' in window) new ResizeObserver(resize).observe(canvas);
-    else window.addEventListener('resize', resize);
 
     if (canObserve) {
       new IntersectionObserver((entries) => {
-        inView = entries[0].isIntersecting;
-        sync();
-      }).observe(hero);
+        visible = entries.some((e) => e.isIntersecting);
+        schedule();
+      }, { threshold: 0.1 }).observe(box);
+    } else {
+      visible = true;
+      schedule();
     }
-    document.addEventListener('visibilitychange', sync);
-    window.addEventListener('themechange', () => {
-      palette = readPalette();
-      if (!running) draw(false);
-    });
-
-    if (finePointer) {
-      hero.addEventListener('pointermove', (e) => {
-        const rect = canvas.getBoundingClientRect();
-        pointer.x = e.clientX - rect.left;
-        pointer.y = e.clientY - rect.top;
-        pointer.active = true;
-      });
-      hero.addEventListener('pointerleave', () => { pointer.active = false; });
-    }
-
-    sync();
+    document.addEventListener('visibilitychange', schedule);
   });
 
-  /* ---------- Card spotlight ---------- */
-  safe('spotlight', () => {
-    if (!finePointer) return;
-    $$('[data-spotlight]').forEach((card) => {
-      card.addEventListener('pointermove', (e) => {
-        const r = card.getBoundingClientRect();
-        card.style.setProperty('--mx', `${e.clientX - r.left}px`);
-        card.style.setProperty('--my', `${e.clientY - r.top}px`);
-      });
-    });
-  });
-
-  /* ---------- Skills marquee ---------- */
-  safe('marquee', () => {
-    if (reduceMotion) return;
-    $$('[data-marquee]').forEach((marquee) => {
-      const track = $('.marquee-track', marquee);
-      if (!track) return;
-      track.insertAdjacentHTML('beforeend', track.innerHTML);
-      marquee.classList.add('is-ready');
-    });
-  });
-
-  /* ---------- Copy to clipboard + toast ---------- */
-  safe('copy', () => {
-    const toast = $('[data-toast]');
-    const toastText = $('[data-toast-text]');
-    let toastTimer;
-
-    const showToast = (message) => {
-      if (!toast || !toastText) return;
-      toastText.textContent = message;
-      toast.classList.add('is-visible');
-      clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => toast.classList.remove('is-visible'), 2200);
+  /* ---------- Skill bars ---------- */
+  safe('bars', () => {
+    const bars = $$('[data-progress]');
+    const fill = (bar) => {
+      const target = Number(bar.getAttribute('data-progress')) || 0;
+      const label = $('[data-progress-value]', bar);
+      bar.classList.add('is-filled');
+      if (!label || reduceMotion) return;
+      const start = performance.now();
+      const frame = (now) => {
+        const t = Math.min(1, (now - start) / 1500);
+        const eased = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+        label.textContent = `${Math.round(target * eased)}%`;
+        if (t < 1) requestAnimationFrame(frame);
+      };
+      label.textContent = '0%';
+      requestAnimationFrame(frame);
     };
+    if (reduceMotion) { bars.forEach((bar) => bar.classList.add('is-filled')); return; }
+    onVisible(bars, fill, { threshold: 0.6 });
+  });
 
-    const copyText = async (text) => {
-      try {
-        await navigator.clipboard.writeText(text);
-        return true;
-      } catch {
-        const area = document.createElement('textarea');
-        area.value = text;
-        area.setAttribute('readonly', '');
-        area.style.position = 'fixed';
-        area.style.opacity = '0';
-        document.body.appendChild(area);
-        area.select();
-        let ok = false;
-        try { ok = document.execCommand('copy'); } catch { ok = false; }
-        area.remove();
-        return ok;
+  /* ---------- Count-up numbers ---------- */
+  safe('counters', () => {
+    const counters = $$('[data-count]');
+    if (reduceMotion || !counters.length) return;
+    const format = (el, value) => `${el.dataset.prefix || ''}${value}${el.dataset.suffix || ''}`;
+    onVisible(counters, (el) => {
+      const target = Number(el.dataset.count) || 0;
+      const start = performance.now();
+      const frame = (now) => {
+        const t = Math.min(1, (now - start) / 1400);
+        el.textContent = format(el, Math.round(target * (1 - Math.pow(1 - t, 3))));
+        if (t < 1) requestAnimationFrame(frame);
+      };
+      requestAnimationFrame(frame);
+    }, { threshold: 0.6 });
+  });
+
+  /* ---------- Local time in Tashkent ---------- */
+  safe('clock', () => {
+    const els = $$('[data-local-time]');
+    if (!els.length) return;
+    const fmt = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Tashkent' });
+    const tick = () => { const t = fmt.format(new Date()); els.forEach((el) => { el.textContent = t; }); };
+    tick();
+    setInterval(tick, 30000);
+  });
+
+  /* ---------- Copy buttons ---------- */
+  safe('copy', () => {
+    document.addEventListener('click', async (e) => {
+      const btn = e.target.closest('[data-copy]');
+      if (!btn) return;
+      const ok = await copyText(btn.getAttribute('data-copy'));
+      toast(ok ? (btn.getAttribute('data-copy-label') || 'Copied to clipboard') : 'Copy failed: please copy it manually');
+    });
+  });
+
+  /* ---------- Code blocks: copy button ---------- */
+  safe('code-copy', () => {
+    $$('.code-block').forEach((block) => {
+      const pre = $('pre', block);
+      if (!pre) return;
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'code-copy';
+      btn.textContent = 'copy';
+      btn.setAttribute('aria-label', 'Copy code to clipboard');
+      btn.addEventListener('click', async () => {
+        const ok = await copyText(pre.innerText.replace(/\n$/, ''));
+        btn.textContent = ok ? 'copied' : 'failed';
+        btn.classList.toggle('is-done', ok);
+        setTimeout(() => { btn.textContent = 'copy'; btn.classList.remove('is-done'); }, 1800);
+      });
+      block.appendChild(btn);
+    });
+  });
+
+  /* ---------- Blog: category filter ---------- */
+  safe('filter', () => {
+    const buttons = $$('[data-filter]');
+    const posts = $$('[data-category]');
+    const status = $('[data-filter-status]');
+    if (!buttons.length || !posts.length) return;
+
+    const apply = (category, { updateHash = true } = {}) => {
+      const known = buttons.some((b) => b.dataset.filter === category);
+      const active = known ? category : 'all';
+      let shown = 0;
+      buttons.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.filter === active)));
+      posts.forEach((post) => {
+        const match = active === 'all' || post.dataset.category === active;
+        post.hidden = !match;
+        if (match) shown += 1;
+      });
+      if (status) {
+        const label = buttons.find((b) => b.dataset.filter === active)?.dataset.label || 'All posts';
+        status.textContent = active === 'all'
+          ? `Showing all ${shown} posts`
+          : `Showing ${shown} ${shown === 1 ? 'post' : 'posts'} in “${label}”`;
+      }
+      if (updateHash) {
+        const url = active === 'all' ? window.location.pathname : `#${active}`;
+        history.replaceState(null, '', url);
       }
     };
 
-    $$('[data-copy]').forEach((btn) => {
-      btn.addEventListener('click', async () => {
-        const value = btn.dataset.copy;
-        const ok = await copyText(value);
-        showToast(ok ? `Copied: ${value}` : 'Could not copy — please copy it manually');
-        if (!ok) return;
-        const use = $('use', btn);
-        btn.classList.add('is-copied');
-        use?.setAttribute('href', '#i-check');
-        setTimeout(() => {
-          btn.classList.remove('is-copied');
-          use?.setAttribute('href', '#i-copy');
-        }, 1600);
+    buttons.forEach((b) => b.addEventListener('click', () => apply(b.dataset.filter)));
+    const fromHash = () => apply(window.location.hash.slice(1) || 'all', { updateHash: false });
+    if (window.location.hash.length > 1) fromHash();
+    window.addEventListener('hashchange', fromHash);
+  });
+
+  /* ---------- Contact form: opens the visitor's mail app with the message filled in ---------- */
+  safe('contact', () => {
+    $$('form[data-mailto]').forEach((form) => {
+      const to = form.getAttribute('data-mailto');
+      const status = $('[data-form-status]', form);
+      const gmail = $('[data-gmail]', form);
+      const mailLink = $('[data-mailto-link]', form);
+      const copyBtn = $('[data-copy-message]', form);
+      const submit = $('[type="submit"]', form);
+      const submitLabel = submit ? $('[data-submit-label]', submit) : null;
+      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+      const fieldError = (input, message) => {
+        const error = input.closest('.field')?.querySelector('.field-error');
+        input.setAttribute('aria-invalid', message ? 'true' : 'false');
+        if (error) {
+          error.textContent = message || '';
+          error.hidden = !message;
+        }
+      };
+
+      const validate = () => {
+        const { name, email, message } = form.elements;
+        const problems = [];
+        const check = (input, ok, message) => {
+          if (!input) return;
+          fieldError(input, ok ? '' : message);
+          if (!ok) problems.push(input);
+        };
+        check(name, name && name.value.trim().length >= 2, 'Please enter your name.');
+        if (email && !email.value.trim()) check(email, false, 'Please enter your email so I can reply.');
+        else check(email, email && emailPattern.test(email.value.trim()), 'This email address does not look right.');
+        check(message, message && message.value.trim().length >= 10, 'Please write a message (at least 10 characters).');
+        if (problems.length) problems[0].focus();
+        return problems.length === 0;
+      };
+
+      form.addEventListener('input', (e) => {
+        if (e.target.getAttribute('aria-invalid') === 'true') fieldError(e.target, '');
+      });
+
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        if (!validate()) return;
+
+        const value = (field) => (form.elements[field] ? form.elements[field].value.trim() : '');
+        const name = value('name');
+        const email = value('email');
+        const topic = value('subject') || 'Hello';
+        const message = value('message').replace(/\r?\n/g, '\r\n');
+        const site = window.location.host || 'portfolio';
+
+        const subject = `${topic} — from ${name}`;
+        const body = [
+          'Hi Ibrohim,',
+          '',
+          message,
+          '',
+          '—',
+          name,
+          email,
+          `(sent via the contact form on ${site})`,
+        ].join('\r\n');
+
+        const mailto = `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        if (mailLink) mailLink.href = mailto;
+        if (gmail) {
+          gmail.href = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(to)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        }
+        if (copyBtn) {
+          copyBtn.setAttribute('data-copy', `To: ${to}\nSubject: ${subject}\n\n${body.replace(/\r\n/g, '\n')}`);
+        }
+        if (status) status.hidden = false;
+        if (submitLabel) {
+          submitLabel.textContent = 'Opening your mail app…';
+          setTimeout(() => { submitLabel.textContent = submitLabel.getAttribute('data-submit-label') || 'Send Message'; }, 2500);
+        }
+
+        window.location.href = mailto;
       });
     });
   });
 
-  /* ---------- Live details: job duration, Tashkent time, year ---------- */
-  safe('details', () => {
-    $$('[data-since]').forEach((el) => {
-      const [year, month] = el.dataset.since.split('-').map(Number);
-      const now = new Date();
-      const months = Math.max(1, (now.getFullYear() - year) * 12 + (now.getMonth() + 1 - month) + 1);
-      const yrs = Math.floor(months / 12);
-      const mos = months % 12;
-      el.textContent = [
-        yrs ? `${yrs} yr${yrs > 1 ? 's' : ''}` : '',
-        mos ? `${mos} mo${mos > 1 ? 's' : ''}` : '',
-      ].filter(Boolean).join(' ');
-    });
-
-    const clocks = $$('[data-local-time]');
-    if (clocks.length) {
-      const fmt = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Tashkent' });
-      const tick = () => {
-        const time = fmt.format(new Date());
-        clocks.forEach((el) => { el.textContent = time; });
-      };
-      tick();
-      setInterval(tick, 30000);
-    }
-
-    $$('[data-year]').forEach((el) => { el.textContent = String(new Date().getFullYear()); });
+  /* ---------- 404: show the requested path ---------- */
+  safe('404', () => {
+    $$('[data-path]').forEach((el) => { el.textContent = window.location.pathname || '/'; });
   });
 })();
